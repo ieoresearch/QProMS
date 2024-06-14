@@ -10,6 +10,8 @@ box::use(
   app/view/upload,
   app/view/rank,
   app/view/statistics,
+  app/view/heatmap,
+  app/view/network,
 )
 
 box::use(
@@ -32,7 +34,8 @@ ui <- function(id) {
     nav_panel(title = "PCA & Correlation", correlation$ui(ns("correlation"))),
     nav_panel(title = "Rank", rank$ui(ns("rank"))),
     nav_panel(title = "Statistics", statistics$ui(ns("statistics"))),
-    nav_panel(title = "Network Analysis", page_sidebar(sidebar = sidebar(title = "sb4"))),
+    nav_panel(title = "Heatmap", heatmap$ui(ns("heatmap"))),
+    nav_panel(title = "Network", network$ui(ns("network"))),
     nav_panel(title = "Functional Analysis", page_sidebar(sidebar = sidebar(title = "sb5"))),
     nav_panel(title = "Tables & Report", page_sidebar(sidebar = sidebar(title = "sb6"))),
     nav_item(input_dark_mode(mode = "light"))
@@ -89,6 +92,8 @@ server <- function(id) {
     correlation$server("correlation", r6 = object)
     rank$server("rank", r6 = object)
     statistics$server("statistics", r6 = object)
+    heatmap$server("heatmap", r6 = object)
+    network$server("network", r6 = object)
     
   })
 }
