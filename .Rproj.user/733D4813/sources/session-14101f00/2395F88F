@@ -1,0 +1,26 @@
+{
+    "id": "2395F88F",
+    "path": "~/Documents/QProMS_v2/app/view/statistics.R",
+    "project_path": "app/view/statistics.R",
+    "type": "r_source",
+    "hash": "3185096524",
+    "contents": "",
+    "dirty": false,
+    "created": 1717497207033.0,
+    "source_on_save": false,
+    "relative_order": 6,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "221,13",
+        "scrollLine": "192"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1718289912,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1718289912365,
+    "read_only": false,
+    "read_only_alternatives": []
+}
