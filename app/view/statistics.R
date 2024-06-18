@@ -1,7 +1,7 @@
 box::use(
   shiny[moduleServer, NS, actionButton, br, selectInput, icon, div, numericInput, observe, updateSelectInput, observeEvent, req, isolate, reactive],
   bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, sidebar, tooltip, input_switch, accordion, accordion_panel, input_task_button],
-  gargoyle[watch, trigger],
+  gargoyle[watch, trigger, init],
   reactable[reactableOutput, renderReactable, getReactableState],
   trelliscope[trelliscopeOutput, renderTrelliscope],
   plotly[plotlyOutput, renderPlotly],
@@ -46,12 +46,18 @@ ui <- function(id) {
             inputId = ns("contrast_input"),
             label = "Contrasts",
             choices = NULL,
+            selected = NULL,
             multiple = TRUE
           ),
           selectInput(
             inputId = ns("test_input"),
             label = "Test type",
-            choices = c("Welch's T-test" = "welch", "Student's T-test" = "student", "limma", "Wilcoxon test" = "wilcox"),
+            choices = c(
+              "Welch's T-test" = "welch",
+              "Student's T-test" = "student",
+              "limma"
+              # "Wilcoxon test" = "wilcox" # remove beacuse not work properly.
+            ), 
             selected = "welch" 
           ),
           input_switch(
@@ -119,6 +125,8 @@ ui <- function(id) {
 server <- function(id, r6) {
   moduleServer(id, function(input, output, session) {
     
+    init("stat")
+    
     observe({
       watch("genes")
       updateSelectInput(inputId = "contrast_input", choices = r6$all_test_combination)
@@ -143,7 +151,7 @@ server <- function(id, r6) {
         paired_test = r6$univariate_paired,
         test_type = r6$univariate_test_type
       )
-      trigger("plot")
+      trigger("plot", "stat")
     })
     
     gene_selected <- reactive(getReactableState("table_uni", "selected"))

@@ -1,0 +1,169 @@
+[2024-06-15 18:52:18] [INFO]    [OmnipathR] Welcome to OmnipathR!
+[2024-06-15 18:52:18] [TRACE]   [OmnipathR] Reading JSON from `/Users/bedin.fabio/Library/Caches/OmnipathR/cache.json` (encoding: UTF-8).
+[2024-06-15 18:52:18] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 18:52:18] [INFO]    [OmnipathR] Initialized cache: `/Users/bedin.fabio/Library/Caches/OmnipathR`.
+[2024-06-15 18:52:18] [TRACE]   [OmnipathR] Reading JSON from `/Users/bedin.fabio/Library/Caches/org.R-project.R/R/renv/cache/v5/R-4.3/x86_64-apple-darwin20/OmnipathR/3.10.1/41cbd1b2c8114dc4676d82f7804551e3/OmnipathR/db/db_def.json` (encoding: UTF-8).
+[2024-06-15 18:52:18] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 18:52:18] [TRACE]   [OmnipathR] Reading JSON from `/Users/bedin.fabio/Library/Caches/org.R-project.R/R/renv/cache/v5/R-4.3/x86_64-apple-darwin20/OmnipathR/3.10.1/41cbd1b2c8114dc4676d82f7804551e3/OmnipathR/internal/magic_bytes.json` (encoding: UTF-8).
+[2024-06-15 18:52:18] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 18:52:18] [TRACE]   [OmnipathR] Reading JSON from `/Users/bedin.fabio/Library/Caches/org.R-project.R/R/renv/cache/v5/R-4.3/x86_64-apple-darwin20/OmnipathR/3.10.1/41cbd1b2c8114dc4676d82f7804551e3/OmnipathR/internal/urls.json` (encoding: UTF-8).
+[2024-06-15 18:52:18] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 18:52:18] [TRACE]   [OmnipathR] Reading JSON from `/Users/bedin.fabio/Library/Caches/org.R-project.R/R/renv/cache/v5/R-4.3/x86_64-apple-darwin20/OmnipathR/3.10.1/41cbd1b2c8114dc4676d82f7804551e3/OmnipathR/internal/id_types.json` (encoding: UTF-8).
+[2024-06-15 18:52:18] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:03:30] [INFO]    [OmnipathR] Loading database `Ensembl and OMA organism names`.
+[2024-06-15 19:03:31] [INFO]    [OmnipathR] Looking up in cache `https://www.ensembl.org/info/about/species.html`: key=7332486db7400730697234bad76ca0c8e4d00799, latest version=1.
+[2024-06-15 19:03:31] [TRACE]   [OmnipathR] Cache file path: /Users/bedin.fabio/Library/Caches/OmnipathR/7332486db7400730697234bad76ca0c8e4d00799-1.html
+[2024-06-15 19:03:31] [TRACE]   [OmnipathR] Looking up in cache: `https://omabrowser.org/All/oma-species.txt`.
+[2024-06-15 19:03:31] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/30e690cbb55dfc63b5903ab337f34ffc2f4be397-1.rds`.
+[2024-06-15 19:03:31] [INFO]    [OmnipathR] Loaded database `Ensembl and OMA organism names`.
+[2024-06-15 19:03:32] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:03:32] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:03:32] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:03:32] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:03:32] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:03:32] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:04:26] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:04:26] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:04:26] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:04:26] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:04:26] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:04:26] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:05:17] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:05:17] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:05:18] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:05:18] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:05:18] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:05:18] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:06:06] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:06:06] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:06:06] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:06:06] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:06:06] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:06:06] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:07:59] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:07:59] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:07:59] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:07:59] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:07:59] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:07:59] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:08:57] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:08:57] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:08:57] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:08:57] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:08:57] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:08:57] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:09:02] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:09:02] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:09:02] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:09:02] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:09:02] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:09:02] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:09:05] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:09:05] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:09:05] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:09:05] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:09:05] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:09:05] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:09:10] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:09:10] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:09:10] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:09:10] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:09:10] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:09:10] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:09:14] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:09:14] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:09:14] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:09:14] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:09:14] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:09:14] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:09:22] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:09:22] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:09:23] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:09:23] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:09:23] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:09:23] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:09:26] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:09:26] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:09:26] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:09:26] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:09:26] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:09:26] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:09:32] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:09:32] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:09:32] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:09:32] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:09:32] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:09:32] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:09:37] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:09:37] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:09:37] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:09:37] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:09:37] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:09:37] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:11:27] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:11:27] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:11:27] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:11:27] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:11:27] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:11:27] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:12:39] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:12:39] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:12:39] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:12:39] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:12:39] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:12:39] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:12:49] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:12:49] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:12:50] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:12:50] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:12:50] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:12:50] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:30:09] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:30:09] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:30:09] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:30:09] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:30:09] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:30:09] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:30:12] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:30:12] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:30:12] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:30:12] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:30:12] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:30:12] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:30:15] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:30:15] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:30:15] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:30:15] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:30:15] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:30:15] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:30:21] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:30:21] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:30:21] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:30:21] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:30:21] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:30:21] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:30:36] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:30:36] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:30:36] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:30:36] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:30:36] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:30:36] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:30:49] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:30:49] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:30:49] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:30:49] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:30:49] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:30:49] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:31:10] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:31:10] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:31:10] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:31:10] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:31:10] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:31:10] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-15 19:31:19] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-15 19:31:19] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-15 19:31:19] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:31:19] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-15 19:31:19] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-15 19:31:19] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-16 07:40:59] [TRACE]   [OmnipathR] Removing database `Ensembl and OMA organism names` (not used in the past 10800 seconds)

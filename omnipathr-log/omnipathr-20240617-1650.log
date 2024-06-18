@@ -1,0 +1,24 @@
+[2024-06-17 16:50:39] [INFO]    [OmnipathR] Welcome to OmnipathR!
+[2024-06-17 16:50:39] [TRACE]   [OmnipathR] Reading JSON from `/Users/bedin.fabio/Library/Caches/OmnipathR/cache.json` (encoding: UTF-8).
+[2024-06-17 16:50:39] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-17 16:50:39] [INFO]    [OmnipathR] Initialized cache: `/Users/bedin.fabio/Library/Caches/OmnipathR`.
+[2024-06-17 16:50:39] [TRACE]   [OmnipathR] Reading JSON from `/Users/bedin.fabio/Library/Caches/org.R-project.R/R/renv/cache/v5/R-4.3/x86_64-apple-darwin20/OmnipathR/3.10.1/41cbd1b2c8114dc4676d82f7804551e3/OmnipathR/db/db_def.json` (encoding: UTF-8).
+[2024-06-17 16:50:39] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-17 16:50:39] [TRACE]   [OmnipathR] Reading JSON from `/Users/bedin.fabio/Library/Caches/org.R-project.R/R/renv/cache/v5/R-4.3/x86_64-apple-darwin20/OmnipathR/3.10.1/41cbd1b2c8114dc4676d82f7804551e3/OmnipathR/internal/magic_bytes.json` (encoding: UTF-8).
+[2024-06-17 16:50:39] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-17 16:50:39] [TRACE]   [OmnipathR] Reading JSON from `/Users/bedin.fabio/Library/Caches/org.R-project.R/R/renv/cache/v5/R-4.3/x86_64-apple-darwin20/OmnipathR/3.10.1/41cbd1b2c8114dc4676d82f7804551e3/OmnipathR/internal/urls.json` (encoding: UTF-8).
+[2024-06-17 16:50:39] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-17 16:50:39] [TRACE]   [OmnipathR] Reading JSON from `/Users/bedin.fabio/Library/Caches/org.R-project.R/R/renv/cache/v5/R-4.3/x86_64-apple-darwin20/OmnipathR/3.10.1/41cbd1b2c8114dc4676d82f7804551e3/OmnipathR/internal/id_types.json` (encoding: UTF-8).
+[2024-06-17 16:50:39] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-17 16:50:54] [INFO]    [OmnipathR] Welcome to OmnipathR!
+[2024-06-17 16:50:54] [TRACE]   [OmnipathR] Reading JSON from `/Users/bedin.fabio/Library/Caches/OmnipathR/cache.json` (encoding: UTF-8).
+[2024-06-17 16:50:54] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-17 16:50:54] [INFO]    [OmnipathR] Initialized cache: `/Users/bedin.fabio/Library/Caches/OmnipathR`.
+[2024-06-17 16:50:54] [TRACE]   [OmnipathR] Reading JSON from `/Users/bedin.fabio/Library/Caches/org.R-project.R/R/renv/cache/v5/R-4.3/x86_64-apple-darwin20/OmnipathR/3.10.1/41cbd1b2c8114dc4676d82f7804551e3/OmnipathR/db/db_def.json` (encoding: UTF-8).
+[2024-06-17 16:50:54] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-17 16:50:54] [TRACE]   [OmnipathR] Reading JSON from `/Users/bedin.fabio/Library/Caches/org.R-project.R/R/renv/cache/v5/R-4.3/x86_64-apple-darwin20/OmnipathR/3.10.1/41cbd1b2c8114dc4676d82f7804551e3/OmnipathR/internal/magic_bytes.json` (encoding: UTF-8).
+[2024-06-17 16:50:54] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-17 16:50:54] [TRACE]   [OmnipathR] Reading JSON from `/Users/bedin.fabio/Library/Caches/org.R-project.R/R/renv/cache/v5/R-4.3/x86_64-apple-darwin20/OmnipathR/3.10.1/41cbd1b2c8114dc4676d82f7804551e3/OmnipathR/internal/urls.json` (encoding: UTF-8).
+[2024-06-17 16:50:54] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-17 16:50:54] [TRACE]   [OmnipathR] Reading JSON from `/Users/bedin.fabio/Library/Caches/org.R-project.R/R/renv/cache/v5/R-4.3/x86_64-apple-darwin20/OmnipathR/3.10.1/41cbd1b2c8114dc4676d82f7804551e3/OmnipathR/internal/id_types.json` (encoding: UTF-8).
+[2024-06-17 16:50:54] [TRACE]   [OmnipathR] JSON validation successful: TRUE

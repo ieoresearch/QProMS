@@ -1,11 +1,11 @@
 box::use(
   R6[R6Class],
   data.table[fread],
-  utils[head, combn],
-  dplyr[`%>%`, n_distinct, group_by, summarise, n, filter, mutate, ungroup, row_number, select, across, where, all_of, na_if, left_join, rename, if_else, case_when, full_join, relocate, inner_join, distinct, count, everything, pull, arrange, slice_head, slice_tail, last_col, rename_with, ends_with, desc, rename_at, vars],
-  tidyr[drop_na, pivot_longer, pivot_wider, expand_grid],
+  utils[head, combn, modifyList],
+  dplyr[`%>%`, n_distinct, group_by, summarise, n, filter, mutate, ungroup, row_number, select, across, where, all_of, na_if, left_join, rename, if_else, case_when, full_join, relocate, inner_join, distinct, count, everything, pull, arrange, slice_head, slice_tail, last_col, rename_with, ends_with, desc, rename_at, vars, bind_rows, group_map, rowwise],
+  tidyr[drop_na, pivot_longer, pivot_wider, expand_grid, unite, separate_rows, unnest_wider, nest],
   purrr[map, set_names, imap, keep_at, flatten_chr, reduce, map_chr, map_dbl],
-  stringr[str_detect, word, str_replace_all, str_extract, str_replace, str_split_1, str_remove, str_which],
+  stringr[str_detect, word, str_replace_all, str_extract, str_replace, str_split_1, str_remove, str_which, str_flatten],
   tibble[tibble, as_tibble, column_to_rownames, rownames_to_column, enframe, deframe],
   vsn[vsn2, predict],
   limma[lmFit, eBayes, topTable],
@@ -19,7 +19,7 @@ box::use(
   trelliscope[panel_lazy, as_trelliscope_df, set_default_layout, add_trelliscope_resource_path],
   heatmaply[heatmaply],
   plotly[plotly_empty, config, layout],
-  echarts4r[e_charts, e_bar, e_x_axis, e_y_axis, e_tooltip, e_legend, e_grid, e_color, e_toolbox_feature, e_show_loading, e_boxplot, e_histogram, e_data, e_scatter, e_scatter_3d, e_x_axis_3d, e_y_axis_3d, e_z_axis_3d, e_correlations, e_visual_map, e_title, e_mark_point, e_add_nested, e_group, e_line, e_band2]
+  echarts4r[e_charts, e_bar, e_x_axis, e_y_axis, e_tooltip, e_legend, e_grid, e_color, e_toolbox_feature, e_show_loading, e_boxplot, e_histogram, e_data, e_scatter, e_scatter_3d, e_x_axis_3d, e_y_axis_3d, e_z_axis_3d, e_correlations, e_visual_map, e_title, e_mark_point, e_add_nested, e_group, e_line, e_band2, e_graph, e_graph_nodes, e_graph_edges, e_labels, e_draft]
 )
 
 box::use(
@@ -95,13 +95,15 @@ QProMS <- R6Class(
     univariate_p_adj_method = "BH",
     fold_change = 1,
     anova_table = NULL,
+    anova_matrix = NULL,
+    row_den = NULL,
+    col_den = NULL,
     anova_alpha = 0.05,
     anova_p_adj_method = "BH",
     anova_clust_method = "complete",
     z_score = TRUE,
     anova_manual_order = FALSE,
     anova_col_order = NULL,
-    clusters_def = NULL,
     clusters_number = 1,
     ######################
     # parameters For ORA #
@@ -757,6 +759,18 @@ QProMS <- R6Class(
           ))
         )
       return(t)
+    },
+    plot_empty_message = function(message) {
+      e_charts(data.frame(x = "", y = ""), x, renderer = self$plot_format) %>%
+        e_bar(y) %>%
+        e_legend(show = FALSE) %>%
+        e_draft(
+          text = message,
+          size = "2rem",
+          opacity = 1,
+          color = "#555"
+        ) %>%
+        e_show_loading(text = "Loading...", color = "#0d6efd")
     },
     plot_protein_counts = function() {
       
@@ -1757,28 +1771,14 @@ QProMS <- R6Class(
         mutate(significant = if_else(p_adj <= alpha, TRUE, FALSE),
                cluster = "not_defined")
       
-      self$anova_table <- stat_data
-    },
-    print_anova_table = function() {
-      if(is.null(self$anova_table)){return(NULL)}
-      t <- self$anova_table %>%
-        select(gene_names, p_val, p_adj, significant, cluster) %>%
-        arrange(p_val, -significant) %>%
-        mutate(across(c("p_val", "p_adj"), ~ -log10(.))) %>%
-        mutate(across(c("p_val", "p_adj"), ~ round(., 3))) 
-      return(t)
-    },
-    plot_heatmap = function(z_score, n_cluster, clustering_method, order_by_expdesing) {
-      
-      if(is.null(self$anova_table)){return(NULL)}
-      # Preprocessing data
-      mat_base <- self$anova_table %>%
+      # perform operation for heatmap
+      mat_base <- stat_data %>%
         filter(significant) %>%
         select(-c(p_val, p_adj, significant, cluster)) %>%
         column_to_rownames("gene_names") %>%
         as.matrix()
       
-      if (nrow(mat_base) < n_cluster) {
+      if (nrow(mat_base) < self$clusters_number) {
         p <- plotly_empty(type = "scatter", mode = "markers") %>%
           config(displayModeBar = FALSE) %>%
           layout(
@@ -1791,22 +1791,46 @@ QProMS <- R6Class(
         return(p)
       }
       
-      if (z_score) {
+      if (self$z_score) {
         mat <- t(apply(mat_base, 1, scale))
         colnames(mat) <- colnames(mat_base)
-        mat_name <- "z-score"
       } else {
         mat <- mat_base
+      }
+      
+      self$row_den <- hclust(dist(mat), method = self$anova_clust_method)
+      self$col_den <- hclust(dist(t(mat)), method = self$anova_clust_method)
+      
+      clusters <- cutree(self$row_den, k = self$clusters_number) %>%
+        enframe(name = "gene_names", value = "cluster") %>%
+        mutate(cluster = paste0("cluster_", cluster))
+      
+      self$anova_table <- stat_data %>%
+        select(-cluster) %>%
+        left_join(clusters, by = "gene_names") %>%
+        mutate(cluster = if_else(is.na(cluster), "not_defined", cluster))
+      
+      self$anova_matrix <- mat
+    },
+    print_anova_table = function() {
+      if(is.null(self$anova_table)){return(NULL)}
+      t <- self$anova_table %>%
+        select(gene_names, p_val, p_adj, significant, cluster) %>%
+        arrange(p_val, -significant) %>%
+        mutate(across(c("p_val", "p_adj"), ~ -log10(.))) %>%
+        mutate(across(c("p_val", "p_adj"), ~ round(., 3))) 
+      return(t)
+    },
+    plot_heatmap = function(order_by_expdesing) {
+      
+      if(is.null(self$anova_matrix)){return(NULL)}
+      
+      if (self$z_score) {
+        mat_name <- "z-score"
+      } else {
         mat_name <- "log2(Intensity)"
       }
-      
-      if (n_cluster < 1) {
-        n_cluster <- 1
-      }
-      
-      row_den <- hclust(dist(mat), method = clustering_method)
-      col_den <- hclust(dist(t(mat)), method = clustering_method)
-      
+
       col_side_colors <- self$expdesign %>%
         select(label, condition) %>%
         deframe()
@@ -1816,21 +1840,12 @@ QProMS <- R6Class(
         color = self$color_palette) %>%
         deframe()
       
-      clusters <- cutree(row_den, k = n_cluster) %>%
-        enframe(name = "gene_names", value = "cluster") %>%
-        mutate(cluster = paste0("cluster_", cluster))
-      
-      self$anova_table <- self$anova_table %>%
-        select(-cluster) %>%
-        left_join(clusters, by = "gene_names") %>%
-        mutate(cluster = if_else(is.na(cluster), "not_defined", cluster))
-      
       # Creating heatmap with heatmaply
       h <- heatmaply(
-        mat,
-        Rowv = as.dendrogram(row_den),
-        k_row = n_cluster,
-        Colv = if (!order_by_expdesing) as.dendrogram(col_den) else NA,
+        self$anova_matrix,
+        Rowv = as.dendrogram(self$row_den),
+        k_row = self$clusters_number,
+        Colv = if (!order_by_expdesing) as.dendrogram(self$col_den) else NA,
         column_text_angle = 45,
         plot_method = "plotly",
         showticklabels = c(TRUE, FALSE),
@@ -1848,8 +1863,7 @@ QProMS <- R6Class(
           scale = 1
         )
       )
-      
-      
+
       # Update column order in anova_col_order
       self$anova_col_order <- h$x$layout$xaxis2$ticktext
       
@@ -1899,7 +1913,7 @@ QProMS <- R6Class(
         e_grid(containLabel = TRUE) %>%
         e_tooltip() %>%
         e_toolbox_feature(feature = c("saveAsImage", "restore", "dataZoom")) %>% 
-        e_show_loading(text = "Loading...", color = "#35608D")
+        e_show_loading(text = "Loading...", color = "#0d6efd")
       
       return(p)
     },
@@ -1946,7 +1960,8 @@ QProMS <- R6Class(
             lineHeight = 60
           )
         ) %>%
-        e_toolbox_feature(feature = c("saveAsImage", "restore", "dataZoom"))
+        e_toolbox_feature(feature = c("saveAsImage", "restore", "dataZoom")) %>% 
+        e_show_loading(text = "Loading...", color = "#0d6efd")
       return(p)
     },
     plot_cluster_profile = function() {
@@ -1971,6 +1986,7 @@ QProMS <- R6Class(
     },
     make_nodes = function(list_from, focus, direction) {
       if (list_from == "univariate") {
+        if(is.null(self$stat_table)){return(NULL)}
         nodes_table <- self$print_stat_table() %>% 
           select(gene_names, starts_with(focus)) %>% 
           rename_at(vars(matches(focus)), ~ str_remove(., paste0(focus, "_"))) %>%
@@ -1991,14 +2007,18 @@ QProMS <- R6Class(
               fold_change < -3 ~ "#053061"
             )
           )
-        if (direction == "up") {
-          nodes_table <- nodes_table %>% 
-            filter(category == "up")
-        } else if (direction == "down") {
-          nodes_table <- nodes_table %>% 
-            filter(category == "down")
+        if(length(direction) < 2) {
+          if ("up" %in% direction) {
+            nodes_table <- nodes_table %>% 
+              filter(category == "up")
+          }
+          if ("down" %in% direction) {
+            nodes_table <- nodes_table %>% 
+              filter(category == "down")
+          }
         }
       } else if (list_from == "multivariate") {
+        if(is.null(self$anova_table)){return(NULL)}
         nodes_table <- self$print_anova_table() %>% 
           filter(significant) %>%
           filter(cluster %in% focus) %>%
@@ -2019,6 +2039,7 @@ QProMS <- R6Class(
     make_edges = function(source) {
       edges_string_table <- NULL
       edges_corum_table <- NULL
+      if(is.null(self$nodes_table)){return(NULL)}
       if(self$organism == "human"){tax_id <- 9606} else {tax_id <- 10090}
       if("string" %in% source) {
         edges_string_table <- self$name_for_edges %>%
@@ -2101,6 +2122,84 @@ QProMS <- R6Class(
         self$edges_table <- edges_string_table %>%
           bind_rows(edges_corum_table)
       }
+    },
+    plot_ppi_network = function(list_from, score_thr, isolate_nodes, layout, show_names, selected, filtered) {
+      if(is.null(self$nodes_table) | is.null(self$edges_table)) {
+        return(self$plot_empty_message("No network to display."))
+      }
+      edges <- self$edges_table %>%
+        filter(score >= score_thr)
+      
+      nodes <- self$nodes_table
+      
+      if (!isolate_nodes) {
+        final_list <- unique(c(edges$source, edges$target))
+        nodes <- nodes %>%
+          filter(gene_names %in% final_list)
+      }
+      
+      if (filtered) {
+        nodes <- nodes %>%
+          filter(gene_names %in% selected)
+      }
+      
+      if (nrow(nodes) == 0) {
+        return(self$plot_empty_message("Nodes table is empty."))
+      }
+      
+      p <- e_charts(renderer = self$plot_format) %>%
+        e_graph(
+          roam = TRUE,
+          layout = layout,
+          zoom = 0.5,
+          force = list(
+            initLayout = "circular",
+            repulsion = 800,
+            edgeLength = 150,
+            layoutAnimation = FALSE
+          ),
+          autoCurveness = TRUE,
+          emphasis = list(focus = "adjacency")
+        ) %>%
+        e_graph_nodes(
+          nodes = nodes,
+          names = gene_names,
+          value = p_val,
+          size = size,
+          category = category,
+          legend = FALSE
+        ) %>%
+        e_graph_edges(
+          edges = edges,
+          source = source,
+          target = target,
+          value = score,
+          size = size
+        ) %>%
+        e_tooltip() %>%
+        e_toolbox_feature(feature = "saveAsImage") 
+      
+      if (show_names) {
+        p <- p %>%
+          e_labels(fontSize = 10)
+      }
+      
+      p$x$opts$series[[1]]$links <- purrr::map2(p$x$opts$series[[1]]$links, edges$color, ~ modifyList(.x, list(lineStyle = list(color = .y))))
+      
+      if (list_from == "univariate") {
+        p$x$opts$series[[1]]$data <- purrr::map2(p$x$opts$series[[1]]$data, nodes$color, ~ modifyList(.x, list(itemStyle = list(color = .y))))
+      }
+      
+      if (!is.null(selected) && !filtered) {
+        p$x$opts$series[[1]]$data <- purrr::map(p$x$opts$series[[1]]$data, function(node) {
+          if (node$name %in% selected) {
+            node$itemStyle <- modifyList(node$itemStyle, list(borderColor = "gray20", borderWidth = 2, color = "#ffc107"))
+            node$symbolSize <- 30
+          }
+          node
+        })
+      }
+      return(p)
     }
   )
 )

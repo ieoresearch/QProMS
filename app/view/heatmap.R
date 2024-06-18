@@ -1,7 +1,7 @@
 box::use(
   shiny[moduleServer, NS, actionButton, br, selectInput, icon, div, numericInput, observe, updateSelectInput, observeEvent, req, isolate, reactive],
   bslib[page_sidebar, layout_columns, navset_card_underline, nav_select, nav_panel, sidebar, tooltip, input_switch, accordion, accordion_panel, input_task_button],
-  gargoyle[watch, trigger],
+  gargoyle[watch, trigger, init],
   reactable[reactableOutput, renderReactable, getReactableState],
   trelliscope[trelliscopeOutput, renderTrelliscope],
   plotly[plotlyOutput, renderPlotly],
@@ -113,6 +113,7 @@ ui <- function(id) {
 server <- function(id, r6) {
   moduleServer(id, function(input, output, session) {
     
+    init("heatmap")
     
     observeEvent(input$update ,{
       r6$anova_alpha <- input$alpha_input_milti
@@ -127,19 +128,20 @@ server <- function(id, r6) {
         p_adj_method = r6$anova_p_adj_method
       )
       
-      output$heatmap_plot <- renderPlotly({
-        r6$plot_heatmap(
-          z_score = r6$z_score,
-          n_cluster = r6$clusters_number,
-          clustering_method = r6$anova_clust_method,
-          order_by_expdesing = r6$anova_manual_order
-        )
-      })
-      output$plot_cluster_profile <- renderTrelliscope({
+      trigger("plot", "heatmap")
+    })
+    output$heatmap_plot <- renderPlotly({
+      watch("plot")
+      if(!is.null(r6$anova_table)) {
+        r6$plot_heatmap(order_by_expdesing = r6$anova_manual_order)
+      }
+      
+    })
+    output$plot_cluster_profile <- renderTrelliscope({
+      watch("plot")
+      if(!is.null(r6$anova_table)) {
         r6$plot_cluster_profile()
-      })
-      nav_select("heatmap_plots_nav", "Heatmap")
-      trigger("plot")
+      }
     })
     
     output$table_anova <- renderReactable({

@@ -1,6 +1,6 @@
 box::use(
   shiny[div, moduleServer, NS, renderUI, tags, uiOutput, showModal, removeModal, modalDialog, observeEvent, tagList, p, h1, actionButton, icon],
-  bslib[page_navbar, page_sidebar, nav_panel, nav_item, sidebar, input_dark_mode, nav_spacer],
+  bslib[page_navbar, page_sidebar, nav_panel, nav_item, sidebar, nav_spacer],
   reactable.extras[reactable_extras_dependency],
 )
 
@@ -37,8 +37,7 @@ ui <- function(id) {
     nav_panel(title = "Heatmap", heatmap$ui(ns("heatmap"))),
     nav_panel(title = "Network", network$ui(ns("network"))),
     nav_panel(title = "Functional Analysis", page_sidebar(sidebar = sidebar(title = "sb5"))),
-    nav_panel(title = "Tables & Report", page_sidebar(sidebar = sidebar(title = "sb6"))),
-    nav_item(input_dark_mode(mode = "light"))
+    nav_panel(title = "Report", page_sidebar(sidebar = sidebar(title = "sb6")))
   )
 }
 

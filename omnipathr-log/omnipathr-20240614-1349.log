@@ -94,3 +94,4 @@
 [2024-06-14 15:18:06] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
 [2024-06-14 15:18:06] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
 [2024-06-14 15:18:06] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-14 18:27:47] [TRACE]   [OmnipathR] Removing database `Ensembl and OMA organism names` (not used in the past 10800 seconds)
