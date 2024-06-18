@@ -51,107 +51,43 @@ r6$stat_anova(alpha = 0.05, p_adj_method = "BH")
 r6$make_nodes(list_from = "univariate", focus = "xl_vs_non", "down")
 r6$organism <- "human"
 r6$make_edges("string")
+r6$plot_heatmap(order_by_expdesing = FALSE)
 
-
-r6$plot_heatmap(z_score = TRUE, n_cluster = 2, clustering_method = "ward.D2", order_by_expdesing = FALSE)
-
-plot_ppi_network = function(list_from, score_thr, isolate_nodes, layout, show_names, selected, filtered) {
-  edges <- self$edges_table %>%
-    filter(score >= score_thr)
-  
-  nodes <- self$nodes_table
-  
-  if (!isolate_nodes) {
-    final_list <- unique(c(edges$source, edges$target))
-    nodes <- nodes %>%
-      filter(gene_names %in% final_list)
-  }
-  
-  if (filtered) {
-    nodes <- nodes %>%
-      filter(gene_names %in% selected)
-  }
-  
-  if (nrow(nodes) == 0) {
-    return(
-      e_charts(renderer = self$plot_format) %>%
-        e_text(
-          "No nodes to display after filtering.",
-          x = "center",
-          y = "center",
-          textStyle = list(fontSize = 20, color = "red")
-        ) %>%
-        e_show_loading(text = "Loading...", color = "#0d6efd")
+reactable_network = function(table, interactive) {
+  if(is.null(table)){return(NULL)}
+  sele <- NULL
+  oncl <- NULL
+  if(interactive){
+    sele <- "multiple"
+    oncl <- "select"
+  } 
+  t <- table %>% 
+    reactable(
+      searchable = TRUE,
+      resizable = TRUE,
+      highlight = TRUE,
+      compact = TRUE,
+      wrap = FALSE,
+      height = "auto",
+      selection = sele,
+      paginationType = "simple",
+      showPageSizeOptions = TRUE,
+      pageSizeOptions = c(6, 12, 18, 24),
+      defaultPageSize = 12,
+      onClick = oncl,
+      defaultColDef = colDef(align = "center", minWidth = 200)
     )
-  }
-  
-  p <- e_charts(renderer = self$plot_format) %>%
-    e_graph(
-      roam = TRUE,
-      layout = layout,
-      zoom = 0.5,
-      force = list(
-        initLayout = "circular",
-        repulsion = 800,
-        edgeLength = 150,
-        layoutAnimation = FALSE
-      ),
-      autoCurveness = TRUE,
-      emphasis = list(focus = "adjacency")
-    ) %>%
-    e_graph_nodes(
-      nodes = nodes,
-      names = gene_names,
-      value = p_val,
-      size = size,
-      category = category,
-      legend = FALSE
-    ) %>%
-    e_graph_edges(
-      edges = edges,
-      source = source,
-      target = target,
-      value = score,
-      size = size
-    ) %>%
-    e_tooltip() %>%
-    e_toolbox_feature(feature = "saveAsImage") %>%
-    e_show_loading(text = "Loading...", color = "#0d6efd")
-  
-  if (show_names) {
-    p <- p %>%
-      e_labels(fontSize = 10)
-  }
-  
-  p$x$opts$series[[1]]$links <- purrr::map2(p$x$opts$series[[1]]$links, edges$color, ~ modifyList(.x, list(lineStyle = list(color = .y))))
-  
-  if (list_from == "univariate") {
-    p$x$opts$series[[1]]$data <- purrr::map2(p$x$opts$series[[1]]$data, nodes$color, ~ modifyList(.x, list(itemStyle = list(color = .y))))
-  }
-  
-  if (!is.null(selected) && !filtered) {
-    p$x$opts$series[[1]]$data <- purrr::map(p$x$opts$series[[1]]$data, function(node) {
-      if (node$name %in% selected) {
-        node$itemStyle <- modifyList(node$itemStyle, list(borderColor = "gray20", borderWidth = 2, color = "#ffc107"))
-        node$symbolSize <- 30
-      }
-      node
-    })
-  }
-  return(p)
+  return(t)
 }
 
-plot_empty_message = function(message) {
-  e_chart(data.frame(x = "", y = ""), x, renderer = "svg") %>%
-    e_bar(y) %>%
-    e_legend(show = FALSE) %>%
-    e_draft(
-      text = message,
-      size = "2rem",
-      opacity = 1,
-      color = "#555"
-    ) %>%
-    e_show_loading(text = "Loading...", color = "#0d6efd")
-}
-plot_empty_message("Ciao")
+plotly_empty(type = "scatter", mode = "markers") %>%
+  config(displayModeBar = FALSE) %>%
+  layout(
+    title = list(
+      text = "Not enough significant genes to generate a heatmap.",
+      yref = "paper",
+      y = 0.5
+    )
+  )
+
 

@@ -2,9 +2,9 @@ box::use(
   R6[R6Class],
   data.table[fread],
   utils[head, combn, modifyList],
-  dplyr[`%>%`, n_distinct, group_by, summarise, n, filter, mutate, ungroup, row_number, select, across, where, all_of, na_if, left_join, rename, if_else, case_when, full_join, relocate, inner_join, distinct, count, everything, pull, arrange, slice_head, slice_tail, last_col, rename_with, ends_with, desc, rename_at, vars, bind_rows, group_map, rowwise],
+  dplyr[`%>%`, n_distinct, group_by, summarise, n, filter, mutate, ungroup, row_number, select, across, where, all_of, na_if, left_join, rename, if_else, case_when, full_join, relocate, inner_join, distinct, count, everything, pull, arrange, slice_head, slice_tail, last_col, rename_with, ends_with, desc, rename_at, vars, bind_rows, group_map, rowwise, if_all],
   tidyr[drop_na, pivot_longer, pivot_wider, expand_grid, unite, separate_rows, unnest_wider, nest],
-  purrr[map, set_names, imap, keep_at, flatten_chr, reduce, map_chr, map_dbl],
+  purrr[map, map2, set_names, imap, keep_at, flatten_chr, reduce, map_chr, map_dbl],
   stringr[str_detect, word, str_replace_all, str_extract, str_replace, str_split_1, str_remove, str_which, str_flatten],
   tibble[tibble, as_tibble, column_to_rownames, rownames_to_column, enframe, deframe],
   vsn[vsn2, predict],
@@ -1779,16 +1779,9 @@ QProMS <- R6Class(
         as.matrix()
       
       if (nrow(mat_base) < self$clusters_number) {
-        p <- plotly_empty(type = "scatter", mode = "markers") %>%
-          config(displayModeBar = FALSE) %>%
-          layout(
-            title = list(
-              text = "Not enough significant genes to generate a heatmap.",
-              yref = "paper",
-              y = 0.5
-            )
-          )
-        return(p)
+        self$anova_matrix <- NULL
+        self$anova_table <- stat_data
+        return()
       }
       
       if (self$z_score) {
@@ -1823,7 +1816,18 @@ QProMS <- R6Class(
     },
     plot_heatmap = function(order_by_expdesing) {
       
-      if(is.null(self$anova_matrix)){return(NULL)}
+      if(is.null(self$anova_matrix)){
+        p <- plotly_empty(type = "scatter", mode = "markers") %>%
+          config(displayModeBar = FALSE) %>%
+          layout(
+            title = list(
+              text = "Not enough significant genes to generate a heatmap.",
+              yref = "paper",
+              y = 0.5
+            )
+          )
+        return(p)
+      }
       
       if (self$z_score) {
         mat_name <- "z-score"
@@ -1986,7 +1990,11 @@ QProMS <- R6Class(
     },
     make_nodes = function(list_from, focus, direction) {
       if (list_from == "univariate") {
-        if(is.null(self$stat_table)){return(NULL)}
+        if (is.null(self$stat_table) || 
+            nrow(filter(self$stat_table, if_all(ends_with("significant"), ~ . == TRUE))) == 0) {
+          self$nodes_table <- NULL
+          return(NULL)
+        }
         nodes_table <- self$print_stat_table() %>% 
           select(gene_names, starts_with(focus)) %>% 
           rename_at(vars(matches(focus)), ~ str_remove(., paste0(focus, "_"))) %>%
@@ -2018,7 +2026,11 @@ QProMS <- R6Class(
           }
         }
       } else if (list_from == "multivariate") {
-        if(is.null(self$anova_table)){return(NULL)}
+        if(is.null(self$anova_table) || 
+           nrow(filter(self$anova_table, significant)) == 0){
+          self$nodes_table <- NULL
+          return(NULL)
+        }
         nodes_table <- self$print_anova_table() %>% 
           filter(significant) %>%
           filter(cluster %in% focus) %>%
@@ -2184,22 +2196,81 @@ QProMS <- R6Class(
           e_labels(fontSize = 10)
       }
       
-      p$x$opts$series[[1]]$links <- purrr::map2(p$x$opts$series[[1]]$links, edges$color, ~ modifyList(.x, list(lineStyle = list(color = .y))))
+      p$x$opts$series[[1]]$links <- map2(p$x$opts$series[[1]]$links, edges$color, ~ modifyList(.x, list(lineStyle = list(color = .y))))
       
       if (list_from == "univariate") {
-        p$x$opts$series[[1]]$data <- purrr::map2(p$x$opts$series[[1]]$data, nodes$color, ~ modifyList(.x, list(itemStyle = list(color = .y))))
+        p$x$opts$series[[1]]$data <- map2(p$x$opts$series[[1]]$data, nodes$color, ~ modifyList(.x, list(itemStyle = list(color = .y))))
       }
       
       if (!is.null(selected) && !filtered) {
-        p$x$opts$series[[1]]$data <- purrr::map(p$x$opts$series[[1]]$data, function(node) {
+        p$x$opts$series[[1]]$data <- map(p$x$opts$series[[1]]$data, function(node) {
           if (node$name %in% selected) {
-            node$itemStyle <- modifyList(node$itemStyle, list(borderColor = "gray20", borderWidth = 2, color = "#ffc107"))
+            node$itemStyle$borderColor <- "gray20"
+            node$itemStyle$color <- "#ffc107"
+            node$itemStyle$borderWidth <- 2
             node$symbolSize <- 30
           }
           node
         })
       }
       return(p)
+    },
+    print_nodes = function(isolate_nodes, score_thr) {
+      if(is.null(self$nodes_table) | is.null(self$edges_table)){return(NULL)}
+      edges <- self$edges_table %>% 
+        filter(score >= score_thr)
+      nodes <- self$nodes_table
+      if(!isolate_nodes) {
+        edge_source <- edges %>% pull(source)
+        edge_target <- edges %>% pull(target)
+        list <- c(edge_source, edge_target)
+        final_list <- unique(list)
+        nodes <- nodes %>%
+          filter(gene_names %in% final_list)
+      }
+      nodes_tab <- nodes %>% 
+        select(c(gene_names, category, p_val, p_adj))
+      
+      return(nodes_tab)
+    },
+    print_edges = function(selected_nodes, score_thr) {
+      if(is.null(self$nodes_table) | is.null(self$edges_table)){return(NULL)}
+      edges_tab <- self$edges_table %>% 
+        filter(score >= score_thr) %>% 
+        filter(if (length(selected_nodes) != 0) source %in% selected_nodes | target %in% selected_nodes else TRUE) %>%
+        select(-color, -size) %>% 
+        mutate(score = if_else(complex == "not defined", round(score, 2), 1)) %>% 
+        separate_rows(complex, sep = "/") %>% 
+        relocate(complex, .after = database)
+      return(edges_tab)
+    },
+    reactable_network = function(table, interactive) {
+      if(is.null(table)){return(NULL)}
+      sele <- NULL
+      oncl <- NULL
+      w <- TRUE
+      if(interactive){
+        sele <- "multiple"
+        oncl <- "select"
+        w <- FALSE
+      } 
+      t <- table %>% 
+        reactable(
+          searchable = TRUE,
+          resizable = TRUE,
+          highlight = TRUE,
+          compact = TRUE,
+          wrap = w,
+          height = "auto",
+          selection = sele,
+          paginationType = "simple",
+          showPageSizeOptions = TRUE,
+          pageSizeOptions = c(6, 12, 18, 24),
+          defaultPageSize = 12,
+          onClick = oncl,
+          defaultColDef = colDef(align = "center", minWidth = 100)
+        )
+      return(t)
     }
   )
 )

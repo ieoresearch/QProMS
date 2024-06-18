@@ -64,10 +64,10 @@ ui <- function(id) {
           sliderInput(
             inputId = ns("top_n_slider"),
             label = "n % of proteins",
-            min = 0,
+            min = 1,
             max = 50,
             value = 10,
-            step = 5
+            step = 1
           )
         )
       ),
