@@ -2,9 +2,9 @@ box::use(
   R6[R6Class],
   data.table[fread],
   utils[head, combn, modifyList],
-  dplyr[`%>%`, n_distinct, group_by, summarise, n, filter, mutate, ungroup, row_number, select, across, where, all_of, na_if, left_join, rename, if_else, case_when, full_join, relocate, inner_join, distinct, count, everything, pull, arrange, slice_head, slice_tail, last_col, rename_with, ends_with, desc, rename_at, vars, bind_rows, group_map, rowwise, if_all],
-  tidyr[drop_na, pivot_longer, pivot_wider, expand_grid, unite, separate_rows, unnest_wider, nest],
-  purrr[map, map2, set_names, imap, keep_at, flatten_chr, reduce, map_chr, map_dbl],
+  dplyr[`%>%`, n_distinct, group_by, summarise, n, filter, mutate, ungroup, row_number, select, across, where, all_of, na_if, left_join, rename, if_else, case_when, full_join, relocate, inner_join, distinct, count, everything, pull, arrange, slice_head, slice_tail, last_col, rename_with, ends_with, desc, rename_at, vars, bind_rows, group_map, rowwise, if_all, group_keys, sym, slice_max],
+  tidyr[drop_na, pivot_longer, pivot_wider, expand_grid, unite, separate_rows, unnest_wider, nest, separate],
+  purrr[map, map2, set_names, imap, keep_at, flatten_chr, reduce, map_chr, map_dbl, possibly, list_rbind, pluck, compact],
   stringr[str_detect, word, str_replace_all, str_extract, str_replace, str_split_1, str_remove, str_which, str_flatten],
   tibble[tibble, as_tibble, column_to_rownames, rownames_to_column, enframe, deframe],
   vsn[vsn2, predict],
@@ -12,6 +12,9 @@ box::use(
   stats[sd, runif, rnorm, prcomp, cor, na.omit, t.test, p.adjust, wilcox.test, model.matrix, aov, hclust, dist, cutree, as.dendrogram, median, qt],
   rbioapi[rba_string_interactions_network],
   OmnipathR[get_complex_genes, import_omnipath_complexes],
+  clusterProfiler[enrichGO, simplify, gseGO],
+  org.Hs.eg.db[org.Hs.eg.db],
+  org.Mm.eg.db[org.Mm.eg.db],
   viridis[viridis],
   htmlwidgets[JS],
   reactable[reactable, colDef],
@@ -19,7 +22,7 @@ box::use(
   trelliscope[panel_lazy, as_trelliscope_df, set_default_layout, add_trelliscope_resource_path],
   heatmaply[heatmaply],
   plotly[plotly_empty, config, layout],
-  echarts4r[e_charts, e_bar, e_x_axis, e_y_axis, e_tooltip, e_legend, e_grid, e_color, e_toolbox_feature, e_show_loading, e_boxplot, e_histogram, e_data, e_scatter, e_scatter_3d, e_x_axis_3d, e_y_axis_3d, e_z_axis_3d, e_correlations, e_visual_map, e_title, e_mark_point, e_add_nested, e_group, e_line, e_band2, e_graph, e_graph_nodes, e_graph_edges, e_labels, e_draft]
+  echarts4r[e_charts, e_bar, e_x_axis, e_y_axis, e_tooltip, e_legend, e_grid, e_color, e_toolbox_feature, e_show_loading, e_boxplot, e_histogram, e_data, e_scatter, e_scatter_3d, e_x_axis_3d, e_y_axis_3d, e_z_axis_3d, e_correlations, e_visual_map, e_title, e_mark_point, e_add_nested, e_group, e_line, e_band2, e_graph, e_graph_nodes, e_graph_edges, e_labels, e_draft, e_flip_coords]
 )
 
 box::use(
@@ -108,19 +111,16 @@ QProMS <- R6Class(
     ######################
     # parameters For ORA #
     ora_result_list = NULL,
-    ora_result_list_simplified = NULL,
     ora_table = NULL,
-    ora_table_all_download = NULL,
-    ora_table_counts = NULL,
     go_ora_from_statistic = NULL,
-    go_ora_tested_condition = NULL,
+    go_ora_focus = NULL,
     go_ora_alpha = 0.05,
     go_ora_p_adj_method = "BH",
     go_ora_term = "BP",
-    go_ora_focus = NULL,
     go_ora_top_n = 10,
     go_ora_simplify_thr = NULL,
-    go_ora_plot_value = "fold_enrichment",
+    go_ora_background = FALSE,
+    go_ora_plot_arrenge = "fold_enrichment",
     #######################
     # parameters for GSEA #
     gsea_result_list = NULL,
@@ -1778,6 +1778,10 @@ QProMS <- R6Class(
         column_to_rownames("gene_names") %>%
         as.matrix()
       
+      if(self$clusters_number < 1) {
+        self$clusters_number <- 1
+      }
+      
       if (nrow(mat_base) < self$clusters_number) {
         self$anova_matrix <- NULL
         self$anova_table <- stat_data
@@ -1976,7 +1980,7 @@ QProMS <- R6Class(
       add_trelliscope_resource_path("trelliscope", tr_dir)
       
       clusters <- self$anova_table %>% distinct(cluster) %>% filter(cluster != "not_defined") %>% pull()
-      colors <- viridis::viridis(n = length(clusters), option = self$palette)
+      colors <- viridis(n = length(clusters), option = self$palette)
       alpha_colors <- str_replace(colors, pattern = "FF", replacement = "E6")
       table <- tibble(clust_name = clusters, clust_color = alpha_colors)
       p <- table %>% 
@@ -2205,9 +2209,7 @@ QProMS <- R6Class(
       if (!is.null(selected) && !filtered) {
         p$x$opts$series[[1]]$data <- map(p$x$opts$series[[1]]$data, function(node) {
           if (node$name %in% selected) {
-            node$itemStyle$borderColor <- "gray20"
-            node$itemStyle$color <- "#ffc107"
-            node$itemStyle$borderWidth <- 2
+            node$itemStyle$color <- "#198754"
             node$symbolSize <- 30
           }
           node
@@ -2271,6 +2273,164 @@ QProMS <- R6Class(
           defaultColDef = colDef(align = "center", minWidth = 100)
         )
       return(t)
+    },
+    make_ora_list_internal = function(focus) {
+      if((is.null(self$stat_table) || is.null(focus))){return(NULL)}
+      test <- str_remove(focus, pattern = "_up|_down")
+      data <- self$stat_table %>%
+        select(gene_names, starts_with(test)) %>%
+        rename_at(vars(matches(test)), ~ str_remove(., paste0(test, "_"))) %>%
+        filter(significant)
+      if(nrow(data) > 0) {
+        data <- data %>%
+          mutate(direction = if_else(fold_change > 0, paste0(test, "_up"), paste0(test, "_down"))) %>%
+          filter(direction == focus) %>% 
+          select(gene_names, direction) 
+      } else {
+        data <- tibble(
+          gene_names = c("NO_Significant", "NO_Significant"),
+          direction = c(paste0(test, "_up"), paste0(test, "_down"))
+        )
+      }
+      return(data)
+    },
+    go_ora = function(list_from, focus, ontology, simplify_thr, alpha, p_adj_method, background) {
+      if(is.null(focus)){return(NULL)}
+      orgdb <- if (self$organism == "human") org.Hs.eg.db else org.Mm.eg.db
+      
+      if (list_from == "univariate") {
+        groupped_data <- map(focus, ~ self$make_ora_list_internal(focus = .x)) %>% 
+          reduce(bind_rows) %>% 
+          group_by(direction)
+        gene_vector <- groupped_data %>% 
+          group_map(~ pull(.x, gene_names)) %>% 
+          set_names(group_keys(groupped_data) %>% pull())
+        uni <- self$stat_table %>% pull(gene_names)
+      }
+      
+      if (list_from == "multivariate") {
+        if(is.null(self$anova_table)){return(NULL)}
+        groupped_data <- self$anova_table %>% 
+          filter(cluster %in% focus) %>% 
+          select(gene_names, cluster) %>% 
+          group_by(cluster)
+        if (nrow(groupped_data) == 0) {
+          gene_vector <- list(not_defined = "NO_Significant")
+        } else {
+          gene_vector <- groupped_data %>% 
+            group_map(~ pull(.x, gene_names)) %>% 
+            set_names(group_keys(groupped_data) %>% pull())
+        }
+        uni <- self$anova_table %>% pull(gene_names)
+      } 
+      
+      if (list_from == "top_rank"){
+        gene_vector <- list(self$protein_rank_list) %>% 
+          set_names(self$protein_rank_target)
+        uni <- self$rank_data %>% pull(gene_names)
+      }
+      
+      if (list_from == "manual"){
+        gene_vector <- list("manual" = focus) 
+        uni <- NULL
+      }
+      
+      if (!background) {
+        uni <- NULL
+      }
+      
+      self$ora_result_list <- map(gene_vector, possibly(~ enrichGO(
+        gene = .x,
+        OrgDb = orgdb,
+        keyType = 'SYMBOL',
+        ont = ontology,
+        pAdjustMethod = p_adj_method,
+        universe = uni,
+        readable = TRUE) %>% 
+          clusterProfiler::filter(p.adjust < alpha) %>% 
+          simplify(cutoff = simplify_thr), otherwise = NULL))
+      
+    },
+    print_ora_table = function(arranged_with) {
+      if(length(compact(self$ora_result_list)) == 0){
+        self$ora_table <- NULL
+        return(NULL)
+      }
+      self$ora_table <- map(self$ora_result_list, ~ pluck(.x, "result")) %>%
+        list_rbind(names_to = "group") %>% 
+        as_tibble() %>% 
+        separate(GeneRatio, into = c("a", "b"), sep = "/", remove = FALSE) %>%
+        separate(BgRatio, into = c("c", "d"), sep = "/", remove = FALSE) %>%
+        mutate(
+          fold_enrichment = (as.numeric(a) / as.numeric(b)) / (as.numeric(c) / as.numeric(d)),
+          across(c("pvalue", "p.adjust", "qvalue"), ~ round(-log10(.), 2)),
+          fold_enrichment = round(fold_enrichment, 2)
+        ) %>%
+        select(-c(a, b, c, d)) %>% 
+        relocate(ID) %>% 
+        relocate(geneID, .after = last_col()) %>% 
+        relocate(Count, .after = fold_enrichment) %>% 
+        arrange(desc(!!sym(arranged_with)))
+    },
+    plot_ora_single = function(focus, arrange, show_category, color) {
+      if(is.null(self$ora_table) || is.null(focus)){return(self$plot_empty_message("No enrichment results."))}
+      data <- self$ora_table %>%  
+        filter(group == focus) 
+      if (nrow(data) == 0) {
+        return(self$plot_empty_message("No enrichment results."))
+      }
+      p <- data %>% 
+        rename(value := !!arrange) %>% 
+        slice_max(abs(value), n = show_category, with_ties = FALSE) %>%
+        arrange(value) %>%
+        e_charts(ID, renderer = self$plot_format) %>%
+        e_bar(value, bind = Description) %>%
+        e_flip_coords() %>%
+        e_grid(containLabel = TRUE) %>%
+        e_color(color) %>%
+        e_tooltip(
+          formatter = JS(
+            paste0("function(params){return('<strong>", arrange, ": </strong>' + params.value[0])}")
+          )
+        ) %>%
+        e_x_axis(
+          name = arrange,
+          nameLocation = "center",
+          nameTextStyle = list(
+            fontWeight = "bold",
+            fontSize = 16,
+            lineHeight = 60
+          )
+        ) %>% 
+        e_y_axis(axisLabel = list(fontSize = 0)) %>%
+        e_legend(show = FALSE) %>%
+        e_labels(show = TRUE, formatter= '{b}', position = "insideLeft") %>%
+        e_toolbox_feature(feature = c("saveAsImage", "dataView")) %>% 
+        e_show_loading(text = "Loading...", color = "#0d6efd")
+      return(p)
+    },
+    plot_ora = function(groups, arrange_with, show_n_category) {
+      if(is.null(groups)){return(NULL)}
+      ## create the resouce path for trelliscope
+      tr_dir <- tempfile()
+      dir.create(tr_dir)
+      add_trelliscope_resource_path("trelliscope", tr_dir)
+    
+      colors <- viridis(n = length(groups), option = self$palette)
+      table <- tibble(
+        focus = groups,
+        arrange = arrange_with,
+        show_category = show_n_category,
+        color = colors
+      )
+      p <- table %>% 
+        mutate(plots_panel = panel_lazy(self$plot_ora_single)) %>% 
+        as_trelliscope_df(name = "BarPlot",
+                          path = file.path(tr_dir, "test"),
+                          jsonp = FALSE) %>% 
+        set_default_layout(ncol = 1)
+      
+      return(p)
     }
   )
 )

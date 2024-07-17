@@ -45,7 +45,7 @@ ui <- function(id) {
             label = "Inputs From",
             choices = c(
               "Rank" = "top_rank",
-              "Statistics" = "univariate",
+              "Volcano" = "univariate",
               "Heatmap" = "multivariate"
             ), 
             selected = "univariate"
@@ -76,18 +76,18 @@ ui <- function(id) {
               choices = NULL,
               multiple = TRUE
             )
-          )
-        ),
-        accordion_panel(
-          title = "Parameters",
-          id = ns("params"),
+          ),
           selectInput(
             inputId = ns("db_source"),
             label = "Database",
             choices = c("String" = "string", "Corum" = "corum"),
             selected = "string", 
             multiple = TRUE
-          ),
+          )
+        ),
+        accordion_panel(
+          title = "Parameters",
+          id = ns("params"),
           sliderInput(
             inputId = ns("score_thr"),
             label = "Score threshold",
@@ -181,14 +181,19 @@ server <- function(id, r6) {
     output$network_plot <- renderEcharts4r({
       watch("plot")
       
-      if (!is.null(r6$nodes_table)) {
+      if(!is.null(r6$nodes_table)) {
         nodes <- r6$print_nodes(
           isolate_nodes = isolate(input$isolate_nodes_input),
           score_thr = r6$network_score_thr
         )
-        highlights <- nodes[gene_selected(), ] %>% 
-          pull(gene_names)
-        fil <- isolate(input$keep_selected)
+        if(!is.null(nodes)) {
+          highlights <- nodes[gene_selected(), ] %>% 
+            pull(gene_names)
+          fil <- isolate(input$keep_selected)
+        } else {
+          highlights <- NULL
+        }
+        
         if(length(highlights) == 0){
           highlights <- NULL
           fil <- FALSE
@@ -224,15 +229,15 @@ server <- function(id, r6) {
         isolate_nodes = isolate(input$isolate_nodes_input),
         score_thr = r6$network_score_thr
       )
-      
-      highlights <- nodes[gene_selected(), ] %>% 
-        pull(gene_names)
-      
-      table <- r6$print_edges(
-        selected_nodes = highlights,
-        score_thr = r6$network_score_thr
-      )
-      r6$reactable_network(table, FALSE)
+      if(!is.null(nodes)) {
+        highlights <- nodes[gene_selected(), ] %>% 
+          pull(gene_names)
+        table <- r6$print_edges(
+          selected_nodes = highlights,
+          score_thr = r6$network_score_thr
+        )
+        r6$reactable_network(table, FALSE)
+      }
     })
 
   })

@@ -13,9 +13,9 @@ box::use(
 
 ## metterli dentro uno script utility functions
 names <- c("A", "B", "C", "D", "E", "F", "G", "H")
-palette_choices <- purrr::map(
+palette_choices <- map(
   names, ~ viridis(n = 6, direction = -1, end = 0.90, begin = 0.10, option = .x)
-  ) %>% purrr::set_names(names)
+  ) %>% set_names(names)
 
 #' @export
 ui <- function(id) {
@@ -311,10 +311,12 @@ server <- function(id, r6) {
     })
     
     observeEvent(input$update, {
+      req(input$start)
       r6$plot_format <- input$plot_format
       r6$palette <- input$palette
       r6$define_colors()
       trigger("plot")
+      nav_select("top_navigation", "Preprocessing")
     })
     
   })

@@ -1,0 +1,226 @@
+box::use(
+  shiny[moduleServer, NS, selectInput, br, sliderInput, actionButton, isolate, icon, observe, updateSelectInput, updateSelectizeInput, reactive, observeEvent, numericInput, conditionalPanel, selectizeInput],
+  bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, sidebar, accordion, accordion_panel, input_switch, tooltip, input_task_button],
+  gargoyle[watch, trigger],
+  trelliscope[trelliscopeOutput, renderTrelliscope],
+  reactable[reactableOutput, renderReactable, getReactableState],
+  dplyr[pull, `%>%`],
+  purrr[map]
+)
+
+#' @export
+ui <- function(id) {
+  ns <- NS(id)
+  page_sidebar(
+    layout_columns(
+      navset_card_underline(
+        title = "ORA",
+        full_screen = TRUE, 
+        nav_panel(
+          "BarPlot",
+          trelliscopeOutput(ns("bar_plot"), style = "height: 100%")
+        )
+      ),
+      navset_card_underline(
+        title = "Table",
+        full_screen = TRUE, 
+        nav_panel(
+          "Results",
+          reactableOutput(ns("table"))
+        )
+      )
+    ),
+    sidebar = sidebar(
+      accordion(
+        id = ns("accordion"),
+        multiple = FALSE,
+        accordion_panel(
+          title = "Inputs",
+          id = ns("inputs"),
+          selectInput(
+            inputId = ns("strategy"),
+            label = "Inputs From",
+            choices = c(
+              "Rank" = "top_rank",
+              "Volcano" = "univariate",
+              "Heatmap" = "multivariate",
+              "Manual selection" = "manual"
+            ), 
+            selected = "univariate"
+          ),
+          conditionalPanel(
+            condition = "input.strategy == 'univariate'",
+            ns = ns,
+            selectInput(
+              inputId = ns("volcano_input"),
+              label = "Contrast",
+              choices = NULL,
+              multiple = TRUE
+            )
+          ),
+          conditionalPanel(
+            condition = "input.strategy == 'multivariate'",
+            ns = ns,
+            selectInput(
+              inputId = ns("clusters_input"),
+              label = "Clusters",
+              choices = NULL,
+              multiple = TRUE
+            )
+          ),
+          conditionalPanel(
+            condition = "input.strategy == 'manual'",
+            ns = ns,
+            selectizeInput(
+              inputId = ns("gene_names_vector"),
+              label = "Gene names",
+              choices = "gene",
+              multiple = TRUE
+            )
+          ),
+          selectInput(
+            inputId = ns("ontology_input"),
+            label = "Ontology",
+            choices = c(
+              "Biological Processes" = "BP",
+              "Molecular Function" = "MF",
+              "Cellular Components" = "CC"
+            ),
+            selected = "BP"
+          )
+        ),
+        accordion_panel(
+          title = "Parameters",
+          id = ns("params"),
+          sliderInput(
+            inputId = ns("simplify_thr"),
+            label = "Simplify threshold",
+            min = 0.1,
+            max = 1,
+            value = 1,
+            step = 0.1
+          ),
+          input_switch(
+            id = ns("background_input"),
+            label = "Background",
+            value = FALSE
+          ),
+          numericInput(
+            inputId = ns("alpha_input"),
+            label = "Alpha",
+            value = 0.05,
+            min = 0.01,
+            max = 0.05,
+            step = 0.01
+          ),
+          selectInput(
+            inputId = ns("truncation_input"),
+            label = "Truncation",
+            choices = c(
+              "Benjamini & Hochberg" = "BH",
+              "Bonferroni" = "bonferroni",
+              "Holm (1979)" = "holm",
+              "Hochberg (1988)" = "hochberg",
+              "Hommel (1988)" = "hommel",
+              "Benjamini & Yekutieli" = "BY",
+              "None" = "none"),
+            selected = "BH"
+          )
+        ),
+        accordion_panel(
+          title = "Visual Parameters",
+          id = ns("v_params"),
+          selectInput(
+            inputId = ns("arrenged"),
+            label = "X axis",
+            choices = c("Fold Enrichment" = "fold_enrichment", "p.value" = "pvalue"),
+            selected = "fold_enrichment"
+          ),
+          numericInput(
+            inputId = ns("show_category"),
+            label = "Show Category",
+            value = 10,
+            min = 1,
+            max = 50,
+            step = 1
+          )
+        )
+      ),
+      input_task_button(
+        id = ns("update"),
+        label = "UPDATE"
+      )
+    )
+  )
+}
+
+#' @export
+server <- function(id, r6) {
+  moduleServer(id, function(input, output, session) {
+    
+    observe({
+      watch("stat")
+      updateSelectInput(inputId = "volcano_input", choices = unlist(map(r6$contrasts, ~ c(paste0(.x, "_up"), paste0(.x, "_down")))))
+    })
+
+    observe({
+      watch("heatmap")
+      updateSelectInput(inputId = "clusters_input", choices = paste0("cluster_", 1:r6$clusters_number))
+    })
+    
+    observe({
+      watch("genes")
+      updateSelectizeInput(inputId = "gene_names_vector", choices = r6$filtered_gene_vector, server = TRUE)
+    })
+    
+    
+    observeEvent(input$update ,{
+      r6$go_ora_from_statistic <- input$strategy
+      r6$go_ora_alpha <- as.double(input$alpha_input)
+      r6$go_ora_p_adj_method <- input$truncation_input
+      r6$go_ora_term <- input$ontology_input
+      r6$go_ora_top_n <- input$show_category
+      r6$go_ora_simplify_thr <- input$simplify_thr
+      r6$go_ora_background <- input$background_input
+      r6$go_ora_plot_arrenge <- input$arrenged
+      
+      if(r6$go_ora_from_statistic == "univariate") {
+        r6$go_ora_focus <- input$volcano_input
+      }
+      
+      if(r6$go_ora_from_statistic == "top_rank") {
+        r6$go_ora_focus <- r6$protein_rank_target
+      }
+      
+      if(r6$go_ora_from_statistic == "multivariate") {
+        r6$go_ora_focus <- input$clusters_input
+      }
+      
+      if(r6$go_ora_from_statistic == "manual") {
+        r6$go_ora_focus <- input$gene_names_vector
+      }
+      
+      r6$go_ora(
+        list_from = r6$go_ora_from_statistic,
+        focus = r6$go_ora_focus,
+        ontology = r6$go_ora_term,
+        simplify_thr = r6$go_ora_simplify_thr,
+        alpha = r6$go_ora_alpha,
+        p_adj_method = r6$go_ora_p_adj_method,
+        background = r6$go_ora_background
+      )
+      r6$print_ora_table(r6$go_ora_plot_arrenge)
+      trigger("plot")
+    })
+   
+    output$bar_plot <- renderTrelliscope({
+      watch("plot")
+      if(!is.null(r6$ora_result_list)) {
+        focus_plot <- r6$go_ora_focus
+        if(r6$go_ora_from_statistic == "manual") {focus_plot <- "manual"}
+        r6$plot_ora(focus_plot, r6$go_ora_plot_arrenge, r6$go_ora_top_n)
+      }
+    })
+    
+  })
+}

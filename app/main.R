@@ -12,6 +12,7 @@ box::use(
   app/view/statistics,
   app/view/heatmap,
   app/view/network,
+  app/view/ora,
 )
 
 box::use(
@@ -33,10 +34,11 @@ ui <- function(id) {
     nav_panel(title = "Preprocessing", preprocessing$ui(ns("preprocessing"))),
     nav_panel(title = "PCA & Correlation", correlation$ui(ns("correlation"))),
     nav_panel(title = "Rank", rank$ui(ns("rank"))),
-    nav_panel(title = "Statistics", statistics$ui(ns("statistics"))),
+    nav_panel(title = "Volcano", statistics$ui(ns("statistics"))),
     nav_panel(title = "Heatmap", heatmap$ui(ns("heatmap"))),
     nav_panel(title = "Network", network$ui(ns("network"))),
-    nav_panel(title = "Functional Analysis", page_sidebar(sidebar = sidebar(title = "sb5"))),
+    nav_panel(title = "ORA", ora$ui(ns("ora"))),
+    nav_panel(title = "GSEA", page_sidebar(sidebar = sidebar(title = "sb1"))),
     nav_panel(title = "Report", page_sidebar(sidebar = sidebar(title = "sb6")))
   )
 }
@@ -93,6 +95,7 @@ server <- function(id) {
     statistics$server("statistics", r6 = object)
     heatmap$server("heatmap", r6 = object)
     network$server("network", r6 = object)
+    ora$server("ora", r6 = object)
     
   })
 }
