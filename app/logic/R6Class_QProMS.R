@@ -2431,6 +2431,32 @@ QProMS <- R6Class(
         set_default_layout(ncol = 1)
       
       return(p)
+    },
+    reactable_functional_analysis = function(table) {
+      if(is.null(table)){return(NULL)}
+      t <- table %>% 
+        reactable(
+          searchable = TRUE,
+          resizable = TRUE,
+          highlight = TRUE,
+          compact = TRUE,
+          wrap = FALSE,
+          height = "auto",
+          paginationType = "simple",
+          showPageSizeOptions = TRUE,
+          pageSizeOptions = c(6, 12, 18, 24),
+          defaultPageSize = 12,
+          defaultColDef = colDef(align = "center", minWidth = 200),
+          columns = list(
+            gene_names = colDef(
+              name = "ID",
+              sticky = "left",
+              style = list(borderRight  = "1px solid #eee")
+            ),
+            geneID = colDef(minWidth = 1500, align = "left")
+          )
+        )
+      return(t)
     }
   )
 )

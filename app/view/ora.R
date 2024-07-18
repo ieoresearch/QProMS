@@ -222,5 +222,10 @@ server <- function(id, r6) {
       }
     })
     
+    output$table <- renderReactable({
+      watch("plot")
+      r6$reactable_functional_analysis(r6$ora_table)
+    })
+    
   })
 }
