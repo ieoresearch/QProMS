@@ -26,17 +26,17 @@ ui <- function(id) {
           trelliscopeOutput(ns("plot_cluster_profile"), style = "height: 100%")
         ),
         nav_panel(
-          "Protein Profile",
-          echarts4rOutput(ns("profile_protein_plot"))
-        ),
-        nav_panel(
-          title = tooltip(
+          tooltip(
             trigger = list(
-              "Table",
+              "Protein Profile",
               icon("info-circle")
             ),
             "Select genes in the table to see their Protein Profile."
           ),
+          echarts4rOutput(ns("profile_protein_plot"))
+        ),
+        nav_panel(
+          title = "Table",
           reactableOutput(ns("table_anova"))
         )
       )

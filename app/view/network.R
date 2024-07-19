@@ -15,7 +15,13 @@ ui <- function(id) {
       navset_card_underline(
         full_screen = TRUE, 
         nav_panel(
-          "Network Plot",
+          tooltip(
+            trigger = list(
+              "Network Plot",
+              icon("info-circle")
+            ),
+            "Select proteins in the Nodes table to highlight them."
+          ),
           echarts4rOutput(ns("network_plot"))
         ),
         nav_panel(

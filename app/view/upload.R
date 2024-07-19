@@ -1,8 +1,6 @@
 box::use(
   shiny[moduleServer, NS, selectInput, br, actionButton, fileInput, radioButtons, observeEvent, observe, div, icon, req, uiOutput, renderUI, updateSelectInput, removeUI],
   bslib[page_sidebar, layout_columns, layout_sidebar, tooltip, navset_card_underline, nav_panel, sidebar, accordion, accordion_panel, nav_select, input_switch, toggle_sidebar, input_task_button],
-  esquisse[palettePicker],
-  viridis[viridis],
   reactable[reactableOutput, renderReactable, reactable, colDef],
   rhandsontable[rHandsontableOutput, renderRHandsontable, hot_to_r],
   purrr[map, set_names, imap, keep_at, flatten_chr, discard_at],
@@ -10,12 +8,6 @@ box::use(
   dplyr[`%>%`, filter, select],
   gargoyle[init, watch, trigger],
 )
-
-## metterli dentro uno script utility functions
-names <- c("A", "B", "C", "D", "E", "F", "G", "H")
-palette_choices <- map(
-  names, ~ viridis(n = 6, direction = -1, end = 0.90, begin = 0.10, option = .x)
-  ) %>% set_names(names)
 
 #' @export
 ui <- function(id) {
@@ -118,28 +110,6 @@ ui <- function(id) {
           input_task_button(
             id = ns("start_with_params"),
             label = "START"
-          )
-        ),
-        accordion_panel(
-          title = "Visual Settings",
-          id = ns("settings"),
-          radioButtons(
-            inputId = ns("plot_format"),
-            label = "Plot extension",
-            choices = c("svg" = "svg", "png" = "canvas"),
-            selected = "svg"
-          ), 
-          palettePicker(
-            inputId = ns("palette"),
-            label = "Palettes:",
-            choices = palette_choices,
-            selected = "D"
-          ),
-          br(),
-          actionButton(
-            inputId = ns("update"),
-            label = "UPDATE",
-            class = "bg-primary"
           )
         )
       )
@@ -307,15 +277,6 @@ server <- function(id, r6) {
       r6$preprocessing()
       r6$shiny_wrap_workflow()
       trigger("plot", "genes")
-      nav_select("top_navigation", "Preprocessing")
-    })
-    
-    observeEvent(input$update, {
-      req(input$start)
-      r6$plot_format <- input$plot_format
-      r6$palette <- input$palette
-      r6$define_colors()
-      trigger("plot")
       nav_select("top_navigation", "Preprocessing")
     })
     

@@ -1012,6 +1012,14 @@ QProMS <- R6Class(
         mutate(intensity = round(intensity, 2)) %>% 
         pivot_wider(id_cols = gene_names, names_from = label, values_from = intensity)
       
+      if (self$is_imp) {
+        imp_information <- data %>%
+          group_by(gene_names) %>%
+          summarise(imputed = any(imputed), .groups = "drop")
+        table <- table %>% 
+          left_join(imp_information, by = "gene_names")
+      }
+      
       if (!df) {
         table <- table %>% 
           reactable(
@@ -1466,6 +1474,14 @@ QProMS <- R6Class(
         pivot_wider(id_cols = "gene_names", names_from = "label", values_from = "intensity") %>%
         left_join(stat_table_list, by = "gene_names")
       
+      if (self$is_imp) {
+        imp_information <- data %>%
+          group_by(gene_names) %>%
+          summarise(imputed = any(imputed), .groups = "drop")
+        joint_stat_table <- joint_stat_table %>% 
+          left_join(imp_information, by = "gene_names")
+      }
+      
       self$stat_table <- joint_stat_table
     },
     print_stat_table = function() {
@@ -1670,6 +1686,7 @@ QProMS <- R6Class(
       return(p)
     },
     stat_anova = function(alpha, p_adj_method) {
+      if(is.null(self$imputed_data)){return(NULL)}
       data <- if (self$is_imp) self$imputed_data else self$normalized_data
       
       # Rimuovere i geni con valori NA
@@ -1919,6 +1936,7 @@ QProMS <- R6Class(
     },
     make_nodes = function(list_from, focus, direction) {
       if (list_from == "univariate") {
+        if(is.null(focus)){return(NULL)}
         if (is.null(self$stat_table) || 
             nrow(filter(self$stat_table, if_all(ends_with("significant"), ~ . == TRUE))) == 0) {
           self$nodes_table <- NULL
@@ -2297,7 +2315,7 @@ QProMS <- R6Class(
         relocate(Count, .after = fold_enrichment) %>% 
         arrange(desc(!!sym(arranged_with)))
     },
-    plot_ora_single = function(focus, arrange, show_category, color) {
+    plot_ora_single = function(focus, arrange, show_category) {
       if(is.null(self$ora_table) || is.null(focus)){return(self$plot_empty_message("No enrichment results."))}
       data <- self$ora_table %>%  
         filter(group == focus) 
@@ -2312,7 +2330,7 @@ QProMS <- R6Class(
         e_bar(value, bind = Description) %>%
         e_flip_coords() %>%
         e_grid(containLabel = TRUE) %>%
-        e_color(color) %>%
+        e_color("#0d6efd") %>%
         e_tooltip(
           formatter = JS(
             paste0("function(params){return('<strong>", arrange, ": </strong>' + params.value[0])}")
@@ -2341,12 +2359,10 @@ QProMS <- R6Class(
       dir.create(tr_dir)
       add_trelliscope_resource_path("trelliscope", tr_dir)
     
-      colors <- viridis(n = length(groups), option = self$palette)
       table <- tibble(
         focus = groups,
         arrange = arrange_with,
-        show_category = show_n_category,
-        color = colors
+        show_category = show_n_category
       )
       p <- table %>% 
         mutate(plots_panel = panel_lazy(self$plot_ora_single)) %>% 

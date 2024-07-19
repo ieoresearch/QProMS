@@ -15,17 +15,17 @@ ui <- function(id) {
       navset_card_underline(
         full_screen = TRUE,
         nav_panel(
-          "Protein Rank Plot",
-          echarts4rOutput(ns("protein_rank_plot"))
-        ),
-        nav_panel(
-          title = tooltip(
+          tooltip(
             trigger = list(
-              "Table",
+              "Protein Rank Plot",
               icon("info-circle")
             ),
             "Select protein in the table to see their position in the Portein Rank Plot."
           ),
+          echarts4rOutput(ns("protein_rank_plot"))
+        ),
+        nav_panel(
+          title = "Table",
           reactableOutput(ns("table"))
         )
       )

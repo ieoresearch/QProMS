@@ -1,6 +1,6 @@
 box::use(
   shiny[div, moduleServer, NS, renderUI, tags, uiOutput, showModal, removeModal, modalDialog, observeEvent, tagList, p, h1, actionButton, icon],
-  bslib[page_navbar, page_sidebar, nav_panel, nav_item, sidebar, nav_spacer],
+  bslib[page_navbar, page_sidebar, nav_panel, nav_item, sidebar, nav_spacer, page_fluid],
   reactable.extras[reactable_extras_dependency],
 )
 
@@ -14,6 +14,7 @@ box::use(
   app/view/network,
   app/view/ora,
   app/view/gsea,
+  app/view/settings,
 )
 
 box::use(
@@ -40,7 +41,8 @@ ui <- function(id) {
     nav_panel(title = "Network", network$ui(ns("network"))),
     nav_panel(title = "ORA", ora$ui(ns("ora"))),
     nav_panel(title = "GSEA", gsea$ui(ns("gsea"))),
-    nav_panel(title = "Report", page_sidebar(sidebar = sidebar(title = "sb6")))
+    nav_panel(title = "", value = "Save Results", icon = icon("download"), page_fluid("Save Results")),
+    nav_panel(title = "", icon = icon("gear"), value = "Settings", settings$ui(ns("settings")))
   )
 }
 
@@ -99,5 +101,6 @@ server <- function(id) {
     ora$server("ora", r6 = object)
     gsea$server("gsea", r6 = object)
     
+    settings$server("settings", r6 = object)
   })
 }

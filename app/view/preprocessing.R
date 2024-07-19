@@ -1,5 +1,5 @@
 box::use(
-  shiny[moduleServer, NS, selectInput, sliderInput, br, actionButton, observeEvent, icon, observe, req],
+  shiny[moduleServer, NS, selectInput, sliderInput, br, actionButton, observeEvent, icon, observe, req, conditionalPanel],
   bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, sidebar, accordion, accordion_panel, input_switch, accordion_panel_remove, tooltip],
   echarts4r[echarts4rOutput, renderEcharts4r],
   gargoyle[watch, trigger],
@@ -131,7 +131,7 @@ ui <- function(id) {
                 "Reverse",
                 icon("info-circle")
               ),
-              "If TRUE will be removed."
+              "If TRUE will be removed. This filter applies only for MaxQuant proteingGroups.txt files."
             ),
             value = TRUE
           ),
@@ -142,7 +142,7 @@ ui <- function(id) {
                 "Contaminant",
                 icon("info-circle")
               ),
-              "If TRUE will be removed."
+              "If TRUE will be removed. This filter applies only for MaxQuant proteingGroups.txt files."
             ),
             value = TRUE
           ),
@@ -153,7 +153,7 @@ ui <- function(id) {
                 "Only identify by site",
                 icon("info-circle")
               ),
-              "If TRUE will be removed."
+              "If TRUE will be removed. This filter applies only for MaxQuant proteingGroups.txt files."
             ),
             value = TRUE
           )
@@ -177,21 +177,25 @@ ui <- function(id) {
             choices = c("Mixed" = "mixed", "Perseus" = "perseus", "None" = "none"),
             selected = "mixed"
           ),
-          sliderInput(
-            inputId = ns("shift_slider"),
-            label = "Down shift",
-            min = 1.6,
-            max = 2,
-            value = 1.8,
-            step = 0.1
-          ),
-          sliderInput(
-            inputId = ns("scale_slider"),
-            label = "Scale",
-            min = 0.1,
-            max = 0.5,
-            value = 0.3,
-            step = 0.1
+          conditionalPanel(
+            condition = "input.imputation_input != 'none'",
+            ns = ns,
+            sliderInput(
+              inputId = ns("shift_slider"),
+              label = "Down shift",
+              min = 1.6,
+              max = 2,
+              value = 1.8,
+              step = 0.1
+            ),
+            sliderInput(
+              inputId = ns("scale_slider"),
+              label = "Scale",
+              min = 0.1,
+              max = 0.5,
+              value = 0.3,
+              step = 0.1
+            )
           )
         )
       ),
