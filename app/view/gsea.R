@@ -33,18 +33,14 @@ ui <- function(id) {
           title = "Inputs",
           id = ns("inputs"),
           selectInput(
-            inputId = ns("strategy"),
-            label = "Inputs From",
-            choices = c(
-              "Rank" = "top_rank",
-              "Volcano" = "univariate",
-              "Heatmap" = "multivariate",
-              "Manual selection" = "manual"
-            ), 
-            selected = "univariate"
+            inputId = ns("rank_with"),
+            label = "Rank with",
+            choices = c("Fold change" = "fc", "Intensity" = "intensity"),
+            selected = "fc", 
+            width = "auto"
           ),
           conditionalPanel(
-            condition = "input.strategy == 'univariate'",
+            condition = "input.rank_with == 'fc'",
             ns = ns,
             selectInput(
               inputId = ns("volcano_input"),
@@ -54,23 +50,26 @@ ui <- function(id) {
             )
           ),
           conditionalPanel(
-            condition = "input.strategy == 'multivariate'",
+            condition = "input.rank_with == 'intensity'",
             ns = ns,
+            input_switch(
+              id = ns("by_cond_input"),
+              label = tooltip(
+                trigger = list(
+                  "Merge Condition",
+                  icon("info-circle")
+                ),
+                "If TRUE, use the Intensity mean of each condition."
+              ),
+              value = FALSE
+            ),
             selectInput(
-              inputId = ns("clusters_input"),
-              label = "Clusters",
+              inputId = ns("target"),
+              label = "Genes from",
               choices = NULL,
-              multiple = TRUE
-            )
-          ),
-          conditionalPanel(
-            condition = "input.strategy == 'manual'",
-            ns = ns,
-            selectizeInput(
-              inputId = ns("gene_names_vector"),
-              label = "Gene names",
-              choices = "gene",
-              multiple = TRUE
+              selected = NULL,
+              multiple = TRUE,
+              width = "auto"
             )
           ),
           selectInput(
@@ -94,11 +93,6 @@ ui <- function(id) {
             max = 1,
             value = 1,
             step = 0.1
-          ),
-          input_switch(
-            id = ns("background_input"),
-            label = "Background",
-            value = FALSE
           ),
           numericInput(
             inputId = ns("alpha_input"),
@@ -129,12 +123,13 @@ ui <- function(id) {
             inputId = ns("arrenged"),
             label = "X axis",
             choices = c(
-              "Fold Enrichment" = "fold_enrichment",
+              "NES" = "NES",
               "p.value" = "pvalue",
               "p.adjust" = "p.adjust",
-              "Count" = "Count"
+              "Enrichment Score" = "enrichmentScore",
+              "Set Size" = "setSize"
             ), 
-            selected = "fold_enrichment"
+            selected = "NES"
           ),
           numericInput(
             inputId = ns("show_category"),
@@ -159,72 +154,64 @@ server <- function(id, r6) {
   moduleServer(id, function(input, output, session) {
     
     observe({
+      watch("genes")
+      if(!is.null(r6$expdesign)) {
+        if(input$by_cond_input){
+          updateSelectInput(inputId = "target", choices = unique(r6$expdesign$condition))
+        } else {
+          updateSelectInput(inputId = "target", choices = r6$expdesign$label)
+        }
+      }
+    })
+    
+    observe({
       watch("stat")
-      updateSelectInput(inputId = "volcano_input", choices = unlist(map(r6$contrasts, ~ c(paste0(.x, "_up"), paste0(.x, "_down")))))
+      updateSelectInput(inputId = "volcano_input", choices = r6$contrasts)
     })
 
-    observe({
-      watch("heatmap")
-      updateSelectInput(inputId = "clusters_input", choices = paste0("cluster_", 1:r6$clusters_number))
-    })
-    
-    observe({
-      watch("genes")
-      updateSelectizeInput(inputId = "gene_names_vector", choices = r6$filtered_gene_vector, server = TRUE)
-    })
-    
-    
     observeEvent(input$update ,{
-      r6$go_ora_from_statistic <- input$strategy
-      r6$go_ora_alpha <- as.double(input$alpha_input)
-      r6$go_ora_p_adj_method <- input$truncation_input
-      r6$go_ora_term <- input$ontology_input
-      r6$go_ora_top_n <- input$show_category
-      r6$go_ora_simplify_thr <- input$simplify_thr
-      r6$go_ora_background <- input$background_input
-      r6$go_ora_plot_arrenge <- input$arrenged
       
-      if(r6$go_ora_from_statistic == "univariate") {
-        r6$go_ora_focus <- input$volcano_input
+      r6$go_gsea_rank_with <- input$rank_with
+      r6$go_gsea_alpha <- input$alpha_input
+      r6$go_gsea_p_adj_method <- input$truncation_input
+      r6$go_gsea_term <- input$ontology_input
+      r6$go_gsea_top_n <- input$show_category
+      r6$go_gsea_simplify_thr <- input$simplify_thr
+      r6$go_gsea_plot_arrenge <- input$arrenged
+     
+      if(r6$go_gsea_rank_with == "fc") {
+        r6$go_gsea_focus <- input$volcano_input
+        r6$go_gsea_by_cond <- FALSE
       }
-      
-      if(r6$go_ora_from_statistic == "top_rank") {
-        r6$go_ora_focus <- r6$protein_rank_target
+
+      if(r6$go_gsea_rank_with == "intensity") {
+        r6$go_gsea_focus <- input$target
+        r6$go_gsea_by_cond <- input$by_cond_input
       }
-      
-      if(r6$go_ora_from_statistic == "multivariate") {
-        r6$go_ora_focus <- input$clusters_input
-      }
-      
-      if(r6$go_ora_from_statistic == "manual") {
-        r6$go_ora_focus <- input$gene_names_vector
-      }
-      
-      r6$go_ora(
-        list_from = r6$go_ora_from_statistic,
-        focus = r6$go_ora_focus,
-        ontology = r6$go_ora_term,
-        simplify_thr = r6$go_ora_simplify_thr,
-        alpha = r6$go_ora_alpha,
-        p_adj_method = r6$go_ora_p_adj_method,
-        background = r6$go_ora_background
+
+      r6$go_gsea(
+        test = r6$go_gsea_focus,
+        rank_type = r6$go_gsea_rank_with,
+        by_condition = r6$go_gsea_by_cond,
+        ontology = r6$go_gsea_term,
+        simplify_thr = r6$go_gsea_simplify_thr,
+        alpha = r6$go_gsea_alpha,
+        p_adj_method = r6$go_gsea_p_adj_method
       )
-      r6$print_ora_table(r6$go_ora_plot_arrenge)
+      r6$print_gsea_table(r6$go_gsea_plot_arrenge)
       trigger("plot")
     })
-   
+
     output$bar_plot <- renderTrelliscope({
       watch("plot")
-      if(!is.null(r6$ora_result_list)) {
-        focus_plot <- r6$go_ora_focus
-        if(r6$go_ora_from_statistic == "manual") {focus_plot <- "manual"}
-        r6$plot_ora(focus_plot, r6$go_ora_plot_arrenge, r6$go_ora_top_n)
+      if(!is.null(r6$gsea_result_list)) {
+        r6$plot_gsea(r6$go_gsea_focus, r6$go_gsea_plot_arrenge, r6$go_gsea_top_n)
       }
     })
-    
+
     output$table <- renderReactable({
       watch("plot")
-      r6$reactable_functional_analysis(r6$ora_table)
+      r6$reactable_functional_analysis(r6$gsea_table)
     })
     
   })

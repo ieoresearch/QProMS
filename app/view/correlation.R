@@ -12,22 +12,18 @@ ui <- function(id) {
   page_sidebar(
     layout_columns(
       navset_card_underline(
-        title = "Principal Component Analysis",
+        # title = "Principal Component Analysis",
         full_screen = TRUE, 
         nav_panel(
-          "2D",
+          "2D PCA",
           echarts4rOutput(ns("pca_2d_plot"))
         ),
         nav_panel(
-          "3D",
+          "3D PCA",
           echarts4rOutput(ns("pca_3d_plot"))
-        )
-      ),
-      navset_card_underline(
-        title = "Correlation",
-        full_screen = TRUE, 
+        ),
         nav_panel(
-          "Heatmap",
+          "Correlation Heatmap",
           echarts4rOutput(ns("correlation_plot"))
         ),
         nav_panel(
@@ -38,7 +34,7 @@ ui <- function(id) {
             ),
             "Multiple plot visualization."
           ),
-          value = "Scatter plot",
+          value = "Scatter plots",
           trelliscopeOutput(ns("scatter_plot"), style = "height: 100%")
         )
       )

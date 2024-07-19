@@ -4,7 +4,7 @@ box::use(
   utils[head, combn, modifyList],
   dplyr[`%>%`, n_distinct, group_by, summarise, n, filter, mutate, ungroup, row_number, select, across, where, all_of, na_if, left_join, rename, if_else, case_when, full_join, relocate, inner_join, distinct, count, everything, pull, arrange, slice_head, slice_tail, last_col, rename_with, ends_with, desc, rename_at, vars, bind_rows, group_map, rowwise, if_all, group_keys, sym, slice_max],
   tidyr[drop_na, pivot_longer, pivot_wider, expand_grid, unite, separate_rows, unnest_wider, nest, separate],
-  purrr[map, map2, set_names, imap, keep_at, flatten_chr, reduce, map_chr, map_dbl, possibly, list_rbind, pluck, compact],
+  purrr[map, map2, set_names, imap, keep_at, flatten_chr, reduce, map_chr, map_dbl, possibly, list_rbind, pluck, compact, flatten],
   stringr[str_detect, word, str_replace_all, str_extract, str_replace, str_split_1, str_remove, str_which, str_flatten],
   tibble[tibble, as_tibble, column_to_rownames, rownames_to_column, enframe, deframe],
   vsn[vsn2, predict],
@@ -50,7 +50,6 @@ QProMS <- R6Class(
     plot_format = "svg",
     palette = "D",
     color_palette = NULL,
-    is_ok = TRUE, #
     #################################
     # parameters for data wrangling #
     filtered_data = NULL,
@@ -88,8 +87,6 @@ QProMS <- R6Class(
     # parameters For Statistics #
     all_test_combination = NULL, 
     contrasts = NULL,
-    primary_condition = NULL,#
-    additional_condition = NULL,#
     univariate = NULL,
     univariate_test_type = NULL,
     univariate_paired = NULL,
@@ -118,26 +115,23 @@ QProMS <- R6Class(
     go_ora_p_adj_method = "BH",
     go_ora_term = "BP",
     go_ora_top_n = 10,
-    go_ora_simplify_thr = NULL,
+    go_ora_simplify_thr = 1,
     go_ora_background = FALSE,
     go_ora_plot_arrenge = "fold_enrichment",
     #######################
     # parameters for GSEA #
     gsea_result_list = NULL,
-    gsea_result_list_simplified = NULL,
-    protein_rank_by_cond_gsea = FALSE,
-    protein_rank_target_gsea = NULL,
+    go_gsea_by_cond = FALSE,
     gsea_table = NULL,
-    gsea_table_all_download = NULL,
-    gsea_table_counts = NULL,
+    go_gsea_rank_with = "fc",
     go_gsea_tested_condition = NULL,
     go_gsea_alpha = 0.05,
     go_gsea_p_adj_method = "BH",
     go_gsea_term = "BP",
     go_gsea_focus = NULL,
     go_gsea_top_n = 10,
-    go_gsea_common_terms = FALSE,
-    go_gsea_simplify_thr = 0.7,
+    go_gsea_simplify_thr = 1,
+    go_gsea_plot_arrenge = "NES",
     ##########################
     # parameters for network #
     nodes_table = NULL,
@@ -190,8 +184,6 @@ QProMS <- R6Class(
       self$fold_change <- parameters_list$fold_change
       self$univariate_alpha <- parameters_list$univariate_alpha
       self$univariate_p_adj_method <- parameters_list$univariate_p_adj_method
-      self$primary_condition <- parameters_list$primary_condition
-      self$additional_condition <- parameters_list$additional_condition
       ## for multivariate page
       self$anova_alpha <- parameters_list$anova_alpha
       self$z_score <- parameters_list$z_score
@@ -961,8 +953,8 @@ QProMS <- R6Class(
       }
       
       p <- data %>%
-        mutate(missing_value = if_else(imputed, "Missing", "Valid")) %>%
-        mutate(missing_value = factor(missing_value, levels = c("Valid", "Missing"))) %>%
+        mutate(missing_value = if_else(imputed, "Imputed", "Valid")) %>%
+        mutate(missing_value = factor(missing_value, levels = c("Valid", "Imputed"))) %>%
         group_by(missing_value) %>%
         e_charts(renderer = self$plot_format) %>%
         e_histogram(intensity, breaks = pretty(0:40, n = 100)) %>%
@@ -987,7 +979,7 @@ QProMS <- R6Class(
           )
         ) %>%
         e_grid(containLabel = TRUE) %>%
-        e_color(c("#0d6efd", "#6c757d")) %>% 
+        e_color(c("#0d6efd", "#bc3754")) %>% 
         e_toolbox_feature(feature = c("saveAsImage", "restore")) %>% 
         e_show_loading(text = "Loading...", color = "#0d6efd")
       
@@ -1006,80 +998,9 @@ QProMS <- R6Class(
         as_trelliscope_df(name = "Distribution",
                           path = file.path(tr_dir, "test"),
                           jsonp = FALSE) %>% 
-        set_default_layout(ncol = 1)
+        set_default_layout(ncol = 2)
       
       
-      return(p)
-    },
-    plot_imputation = function(data, imp_visualization = FALSE) {
-      
-      if(is.null(data)){return(NULL)}
-
-      alpha_cols <- str_replace(self$color_palette, pattern = "FF", replacement = "B3")
-      br <- pretty(0:40, n = 100)
-      p <- data %>%
-        group_by(condition) %>%
-        e_charts(renderer = self$plot_format) %>%
-        e_histogram(intensity, breaks = br) %>%
-        e_color(alpha_cols) %>%
-        e_y_axis(
-          name = "Counts",
-          nameLocation = "center",
-          nameTextStyle = list(
-            fontWeight = "bold",
-            fontSize = 16,
-            lineHeight = 60
-          )
-        ) %>%  
-        e_x_axis(
-          name = "log2 Intensity",
-          nameLocation = "center",
-          min = 10, max = 40,
-          nameTextStyle = list(
-            fontWeight = "bold",
-            fontSize = 14,
-            lineHeight = 60
-          )
-        ) %>%
-        e_grid(containLabel = TRUE) %>%
-        e_show_loading(text = "Loading...", color = "#0d6efd")
-      
-      if(imp_visualization){
-        imputed_dist <- self$imputed_data %>% 
-          filter(imputed) %>% 
-          group_by(condition)
-        
-        p <- data %>%
-          group_by(condition) %>%
-          e_charts(renderer = self$plot_format) %>%
-          e_histogram(intensity, breaks = br) %>%
-          e_color(c(alpha_cols, "#bc3754")) %>%
-          e_data(imputed_dist, intensity) %>% 
-          e_toolbox_feature(feature = c("saveAsImage", "restore")) %>% 
-          e_histogram(intensity, name = "Imputed", breaks = br) %>%
-          e_legend(selected = list('Imputed'= TRUE)) %>% 
-          e_y_axis(
-            name = "Counts",
-            nameLocation = "center",
-            nameTextStyle = list(
-              fontWeight = "bold",
-              fontSize = 16,
-              lineHeight = 60
-            )
-          ) %>%  
-          e_x_axis(
-            name = "log2 Intensity",
-            nameLocation = "center",
-            min = 10, max = 40,
-            nameTextStyle = list(
-              fontWeight = "bold",
-              fontSize = 14,
-              lineHeight = 60
-            )
-          ) %>%
-          e_grid(containLabel = TRUE) %>%
-          e_show_loading(text = "Loading...", color = "#0d6efd")
-      }
       return(p)
     },
     print_table = function(data, df = FALSE) {
@@ -1370,7 +1291,7 @@ QProMS <- R6Class(
         as_trelliscope_df(name = "Scatter",
                           path = file.path(tr_dir, "test"),
                           jsonp = FALSE) %>% 
-        set_default_layout(ncol = 1)
+        set_default_layout(ncol = 2)
       
       return(p)
     },
@@ -1680,7 +1601,7 @@ QProMS <- R6Class(
       )
       p <- contrasts_table %>% 
         mutate(plots_panel = panel_lazy(self$plot_volcano_single)) %>% 
-        as_trelliscope_df(name = "Volcanos",
+        as_trelliscope_df(name = "Volcano Plots",
                           path = file.path(tr_dir, "test"),
                           jsonp = FALSE) %>% 
         set_default_layout(ncol = 1)
@@ -1689,6 +1610,7 @@ QProMS <- R6Class(
     },
     plot_stat_profile_single = function(contrast, gene) {
       
+      if(gene == "NO_GENE_SELECTED"){return(self$plot_empty_message("No genes selected."))}
       data <- if (self$is_imp) self$imputed_data else self$normalized_data
       cond <- unique(str_split_1(contrast, "_vs_"))
       
@@ -1725,7 +1647,9 @@ QProMS <- R6Class(
       return(p)
     },
     plot_stat_profile = function(tests, genes) {
-      if(is.null(genes)){return(NULL)}
+      if(is.null(genes) || length(genes) == 0){
+        genes <- "NO_GENE_SELECTED"
+      }
       ## create the resouce path for trelliscope
       tr_dir <- tempfile()
       dir.create(tr_dir)
@@ -1738,10 +1662,10 @@ QProMS <- R6Class(
       )
       p <- table %>% 
         mutate(plots_panel = panel_lazy(self$plot_stat_profile_single)) %>% 
-        as_trelliscope_df(name = "Profile Plot",
+        as_trelliscope_df(name = "Profile Plots",
                           path = file.path(tr_dir, "test"),
                           jsonp = FALSE) %>% 
-        set_default_layout(ncol = 1)
+        set_default_layout(ncol = 2)
       
       return(p)
     },
@@ -1880,6 +1804,7 @@ QProMS <- R6Class(
     plot_protein_profile = function(gene) {
       
       if(is.null(self$anova_table)){return(NULL)}
+      if(is.null(gene) || length(gene) == 0){return(self$plot_empty_message("No Protein selected."))}
       
       clu <- self$anova_table %>%
         filter(gene_names %in% gene) %>%
@@ -1988,7 +1913,7 @@ QProMS <- R6Class(
         as_trelliscope_df(name = "Profile Plot",
                           path = file.path(tr_dir, "test"),
                           jsonp = FALSE) %>% 
-        set_default_layout(ncol = 1)
+        set_default_layout(ncol = 2)
       
       return(p)
     },
@@ -2363,8 +2288,8 @@ QProMS <- R6Class(
         separate(BgRatio, into = c("c", "d"), sep = "/", remove = FALSE) %>%
         mutate(
           fold_enrichment = (as.numeric(a) / as.numeric(b)) / (as.numeric(c) / as.numeric(d)),
-          across(c("pvalue", "p.adjust", "qvalue"), ~ round(-log10(.), 2)),
-          fold_enrichment = round(fold_enrichment, 2)
+          across(c("pvalue", "p.adjust", "qvalue"), ~ round(-log10(.), 3)),
+          fold_enrichment = round(fold_enrichment, 3)
         ) %>%
         select(-c(a, b, c, d)) %>% 
         relocate(ID) %>% 
@@ -2457,6 +2382,148 @@ QProMS <- R6Class(
           )
         )
       return(t)
+    },
+    go_gsea_rank_vector = function(test, rank, cond) {
+      if(is.null(test)){return(NULL)}
+      if (rank == "fc") {
+        cond_1 <- str_split_1(test, "_vs_")[1]
+        cond_2 <- str_split_1(test, "_vs_")[2]
+        gsea_vec <- self$imputed_data %>%
+          filter(condition %in% c(cond_1, cond_2)) %>%
+          group_by(gene_names, condition) %>%
+          summarise(mean = mean(intensity), .groups = "drop") %>%
+          pivot_wider(names_from = condition, values_from = mean) %>%
+          mutate(fold_change = get(cond_1) - get(cond_2)) %>%
+          arrange(desc(fold_change)) %>%
+          select(gene_names, fold_change) %>%
+          deframe() %>%
+          list()
+      } else {
+        if (cond) {
+          gsea_vec <- self$imputed_data %>%
+            filter(condition == test) %>%
+            group_by(gene_names) %>%
+            summarise(mean_intensity = mean(intensity), .groups = "drop") %>%
+            arrange(desc(mean_intensity)) %>%
+            select(gene_names, mean_intensity) %>%
+            deframe() %>%
+            list()
+        } else {
+          gsea_vec <- self$imputed_data %>%
+            filter(label == test) %>%
+            arrange(desc(intensity)) %>%
+            select(gene_names, intensity) %>%
+            deframe() %>%
+            list()
+        }
+      }
+      gsea_list_vec <- set_names(gsea_vec, test)
+      return(gsea_list_vec)
+    },
+    go_gsea = function(test, rank_type, by_condition, ontology, simplify_thr, alpha, p_adj_method) {
+      if(is.null(test)){return(NULL)}
+      orgdb <- if (self$organism == "human") org.Hs.eg.db else org.Mm.eg.db
+      
+      list_of_gesa_vector <- map(
+        .x = test,
+        .f = ~ self$go_gsea_rank_vector(test = .x, rank = rank_type, cond = by_condition)
+      ) %>% flatten()
+      
+      self$gsea_result_list <- map(
+        .x = list_of_gesa_vector,
+        .f = possibly(
+          ~ gseGO(
+            geneList     = .x,
+            OrgDb        = orgdb,
+            ont          = ontology,
+            keyType      = 'SYMBOL',
+            pAdjustMethod = p_adj_method,
+            verbose      = FALSE,
+            nPermSimple = 10000,
+            eps = 0
+          )  %>%
+            clusterProfiler::filter(p.adjust < alpha) %>%
+            simplify(cutoff = simplify_thr),
+          otherwise = NULL
+        )
+      )
+    },
+    print_gsea_table = function(arranged_with) {
+      if(length(compact(self$gsea_result_list)) == 0){
+        self$gsea_table <- NULL
+        return(NULL)
+      }
+      self$gsea_table <- map(self$gsea_result_list, ~ pluck(.x, "result")) %>%
+        list_rbind(names_to = "group") %>% 
+        as_tibble() %>% 
+        mutate(
+          across(c("pvalue", "p.adjust", "qvalue"), ~ round(-log10(.), 3)),
+          across(c("enrichmentScore", "NES"), ~ round(., 3))
+        ) %>%
+        relocate(ID) %>% 
+        rename(geneID = core_enrichment) %>% 
+        relocate(geneID, .after = last_col()) %>% 
+        select(-leading_edge) %>% 
+        arrange(desc(!!sym(arranged_with)))
+    },
+    plot_gsea_single = function(focus, arrange, show_category) {
+      if(is.null(self$gsea_table) || is.null(focus)){return(self$plot_empty_message("No enrichment results."))}
+      data <- self$gsea_table %>%  
+        filter(group == focus) 
+      if (nrow(data) == 0) {
+        return(self$plot_empty_message("No enrichment results."))
+      }
+      p <- data %>% 
+        mutate(color = if_else(NES > 0, "#67001f", "#053061")) %>%
+        rename(value := !!arrange) %>% 
+        slice_max(abs(value), n = show_category, with_ties = FALSE) %>%
+        arrange(value) %>%
+        e_charts(ID, renderer = self$plot_format) %>%
+        e_bar(value, bind = Description) %>%
+        e_flip_coords() %>%
+        e_grid(containLabel = TRUE) %>%
+        e_add_nested("itemStyle", color) %>%
+        e_tooltip(
+          formatter = JS(
+            paste0("function(params){return('<strong>", arrange, ": </strong>' + params.value[0])}")
+          )
+        ) %>%
+        e_x_axis(
+          name = arrange,
+          nameLocation = "center",
+          nameTextStyle = list(
+            fontWeight = "bold",
+            fontSize = 16,
+            lineHeight = 60
+          )
+        ) %>% 
+        e_y_axis(axisLabel = list(fontSize = 0)) %>%
+        e_legend(show = FALSE) %>%
+        e_labels(show = TRUE, formatter= '{b}', position = "insideLeft") %>%
+        e_toolbox_feature(feature = c("saveAsImage", "dataView")) %>% 
+        e_show_loading(text = "Loading...", color = "#0d6efd")
+      return(p)
+    },
+    plot_gsea = function(groups, arrange_with, show_n_category) {
+      if(is.null(groups)){return(NULL)}
+      ## create the resouce path for trelliscope
+      tr_dir <- tempfile()
+      dir.create(tr_dir)
+      add_trelliscope_resource_path("trelliscope", tr_dir)
+      
+      table <- tibble(
+        focus = groups,
+        arrange = arrange_with,
+        show_category = show_n_category
+      )
+      p <- table %>% 
+        mutate(plots_panel = panel_lazy(self$plot_gsea_single)) %>% 
+        as_trelliscope_df(name = "BarPlot",
+                          path = file.path(tr_dir, "test"),
+                          jsonp = FALSE) %>% 
+        set_default_layout(ncol = 1)
+      
+      return(p)
     }
   )
 )

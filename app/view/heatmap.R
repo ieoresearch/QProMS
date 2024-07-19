@@ -15,7 +15,6 @@ ui <- function(id) {
   page_sidebar(
     layout_columns(
       navset_card_underline(
-        title = "Plots",
         id = ns("heatmap_plots_nav"),
         full_screen = TRUE, 
         nav_panel(
@@ -23,19 +22,21 @@ ui <- function(id) {
           plotlyOutput(ns("heatmap_plot"))
         ), 
         nav_panel(
+          "Cluster Profile",
+          trelliscopeOutput(ns("plot_cluster_profile"), style = "height: 100%")
+        ),
+        nav_panel(
           "Protein Profile",
           echarts4rOutput(ns("profile_protein_plot"))
         ),
         nav_panel(
-          "Cluster Profile",
-          trelliscopeOutput(ns("plot_cluster_profile"), style = "height: 100%")
-        )
-      ),
-      navset_card_underline(
-        title = "Table",
-        full_screen = TRUE, 
-        nav_panel(
-          "Results",
+          title = tooltip(
+            trigger = list(
+              "Table",
+              icon("info-circle")
+            ),
+            "Select genes in the table to see their Protein Profile."
+          ),
           reactableOutput(ns("table_anova"))
         )
       )

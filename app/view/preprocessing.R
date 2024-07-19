@@ -13,7 +13,6 @@ ui <- function(id) {
   page_sidebar(
     layout_columns(
       navset_card_underline(
-        title = "Subset",
         full_screen = TRUE, 
         nav_panel(
           "Counts",
@@ -28,39 +27,29 @@ ui <- function(id) {
           echarts4rOutput(ns("valid_values_plot"))
         ),
         nav_panel(
-          "CV",
+          title = tooltip(
+            trigger = list(
+              "CV",
+              icon("info-circle")
+            ),
+            "Coefficient of Variation Plot."
+          ),
           echarts4rOutput(ns("cv_plot"))
         ),
         nav_panel(
-          "Table",
-          reactableOutput(ns("subset_table"))
-        )
-      ),
-      navset_card_underline(
-        title = "Missing Data",
-        full_screen = TRUE, 
-        nav_panel(
-          "Counts",
+          "Missing Data",
           echarts4rOutput(ns("missing_data_counts_plot"))
         ),
         nav_panel(
           title = tooltip(
             trigger = list(
-              "Distribution",
+              "Imputed",
               icon("info-circle")
             ),
             "Multiple plot visualization."
           ),
           value = "Distribution",
           trelliscopeOutput(ns("missval_distribution_plot"), style = "height: 100%")
-        ),
-        # nav_panel(
-        #   "Not Imputed",
-        #   echarts4rOutput(ns("pre_imputation_plot"))
-        # ),
-        nav_panel(
-          "Imputed",
-          echarts4rOutput(ns("post_imputation_plot"))
         ),
         nav_panel(
           "Table",
@@ -262,10 +251,7 @@ server <- function(id, r6) {
       watch("plot")
       r6$plot_missval_distribution() 
     })
-    # output$pre_imputation_plot <- renderEcharts4r({
-    #   watch("plot")
-    #   r6$plot_imputation(data = r6$normalized_data, imp_visualization = FALSE) 
-    # })
+    
     output$post_imputation_plot <- renderEcharts4r({
       watch("plot")
       if(r6$imp_methods == "none"){
@@ -273,10 +259,6 @@ server <- function(id, r6) {
       }else{
         r6$plot_imputation(data = r6$imputed_data, imp_visualization = TRUE) 
       }
-    })
-    output$subset_table <- renderReactable({
-      watch("plot")
-      r6$print_table(r6$normalized_data)
     })
     output$imputed_table <- renderReactable({
       watch("plot")

@@ -13,22 +13,17 @@ ui <- function(id) {
   page_sidebar(
     layout_columns(
       navset_card_underline(
-        title = "Network",
         full_screen = TRUE, 
         nav_panel(
-          "Plot",
+          "Network Plot",
           echarts4rOutput(ns("network_plot"))
-        )
-      ),
-      navset_card_underline(
-        title = "Tables",
-        full_screen = TRUE, 
+        ),
         nav_panel(
-          "Nodes",
+          "Nodes Table",
           reactableOutput(ns("table_nodes"))
         ),
         nav_panel(
-          "Edges",
+          "Edges Table",
           reactableOutput(ns("table_edges"))
         )
       )
@@ -208,7 +203,8 @@ server <- function(id, r6) {
           filtered = fil
         )
       } else {
-        r6$plot_empty_message("No network to display.")
+        # r6$plot_empty_message("No network to display.")
+        NULL
       }
     })
     

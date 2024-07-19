@@ -15,22 +15,23 @@ ui <- function(id) {
   page_sidebar(
     layout_columns(
       navset_card_underline(
-        title = "Plots",
         full_screen = TRUE, 
         nav_panel(
-          title = "Volcano",
+          title = "Volcano Plot",
           trelliscopeOutput(ns("volcano_plot"), style = "height: 100%")
         ), 
         nav_panel(
-          title = "Profile",
+          title = "Profile Plot",
           trelliscopeOutput(ns("profile_plot_uni"), style = "height: 100%")
-        )
-      ),
-      navset_card_underline(
-        title = "Table",
-        full_screen = TRUE, 
+        ),
         nav_panel(
-          "Results",
+          title = tooltip(
+            trigger = list(
+              "Table",
+              icon("info-circle")
+            ),
+            "Select genes in the table to see their position in the Volcano Plot or to generate their corrispective Profile plot."
+          ),
           reactableOutput(ns("table_uni"))
         )
       )

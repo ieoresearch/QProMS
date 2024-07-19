@@ -1,6 +1,6 @@
 box::use(
   shiny[moduleServer, NS, selectInput, br, sliderInput, actionButton, icon, observe, updateSelectInput, reactive, observeEvent],
-  bslib[page_sidebar, layout_columns, card, card_header, card_body, sidebar, accordion, accordion_panel, input_switch, tooltip],
+  bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, sidebar, accordion, accordion_panel, input_switch, tooltip],
   gargoyle[watch, trigger],
   echarts4r[echarts4rOutput, renderEcharts4r],
   reactable[reactableOutput, renderReactable, getReactableState],
@@ -12,16 +12,23 @@ ui <- function(id) {
   ns <- NS(id)
   page_sidebar(
     layout_columns(
-      card(
+      navset_card_underline(
         full_screen = TRUE,
-        card_header("Protein Rank Plot"),
-        card_body(echarts4rOutput(ns("protein_rank_plot")))
-      ),
-      card(
-        full_screen = TRUE,
-        card_header("Table"),
-        card_body(reactableOutput(ns("table")))
-      ),
+        nav_panel(
+          "Protein Rank Plot",
+          echarts4rOutput(ns("protein_rank_plot"))
+        ),
+        nav_panel(
+          title = tooltip(
+            trigger = list(
+              "Table",
+              icon("info-circle")
+            ),
+            "Select protein in the table to see their position in the Portein Rank Plot."
+          ),
+          reactableOutput(ns("table"))
+        )
+      )
     ),
     sidebar = sidebar(
       accordion(

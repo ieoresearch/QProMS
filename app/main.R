@@ -13,6 +13,7 @@ box::use(
   app/view/heatmap,
   app/view/network,
   app/view/ora,
+  app/view/gsea,
 )
 
 box::use(
@@ -38,7 +39,7 @@ ui <- function(id) {
     nav_panel(title = "Heatmap", heatmap$ui(ns("heatmap"))),
     nav_panel(title = "Network", network$ui(ns("network"))),
     nav_panel(title = "ORA", ora$ui(ns("ora"))),
-    nav_panel(title = "GSEA", page_sidebar(sidebar = sidebar(title = "sb1"))),
+    nav_panel(title = "GSEA", gsea$ui(ns("gsea"))),
     nav_panel(title = "Report", page_sidebar(sidebar = sidebar(title = "sb6")))
   )
 }
@@ -96,6 +97,7 @@ server <- function(id) {
     heatmap$server("heatmap", r6 = object)
     network$server("network", r6 = object)
     ora$server("ora", r6 = object)
+    gsea$server("gsea", r6 = object)
     
   })
 }
