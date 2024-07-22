@@ -1,6 +1,6 @@
 box::use(
   shiny[moduleServer, NS, selectInput, br, actionButton, observeEvent, updateSelectizeInput, observe, selectizeInput, isolate, icon],
-  bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, sidebar, accordion, accordion_panel, tooltip],
+  bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, sidebar, accordion, accordion_panel, tooltip, input_switch],
   echarts4r[echarts4rOutput, renderEcharts4r],
   trelliscope[trelliscopeOutput, renderTrelliscope],
   gargoyle[watch, trigger],
@@ -12,15 +12,10 @@ ui <- function(id) {
   page_sidebar(
     layout_columns(
       navset_card_underline(
-        # title = "Principal Component Analysis",
         full_screen = TRUE, 
         nav_panel(
-          "2D PCA",
-          echarts4rOutput(ns("pca_2d_plot"))
-        ),
-        nav_panel(
-          "3D PCA",
-          echarts4rOutput(ns("pca_3d_plot"))
+          "PCA",
+          echarts4rOutput(ns("pca_plot"))
         ),
         nav_panel(
           "Correlation Heatmap",
@@ -46,6 +41,17 @@ ui <- function(id) {
         accordion_panel(
           title = "Inputs",
           id = ns("subset"),
+          input_switch(
+            id = ns("pca_3d"),
+            label = tooltip(
+              trigger = list(
+                "PCA plot 3D",
+                icon("info-circle")
+              ),
+              "if TRUE, add the third dimension to PCA plot."
+            ),
+            value = FALSE
+          ),
           selectInput(
             inputId = ns("correlation_input"),
             label = "Correlation method",
@@ -89,14 +95,9 @@ server <- function(id, r6) {
       trigger("plot")
     })
     
-    output$pca_2d_plot <- renderEcharts4r({
+    output$pca_plot <- renderEcharts4r({
       watch("plot")
-      r6$plot_pca(view_3d = FALSE) 
-    })
-    
-    output$pca_3d_plot <- renderEcharts4r({
-      watch("plot")
-      r6$plot_pca(view_3d = TRUE) 
+      r6$plot_pca(view_3d = isolate(input$pca_3d)) 
     })
     
     output$correlation_plot <- renderEcharts4r({

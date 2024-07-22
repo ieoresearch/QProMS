@@ -41,13 +41,7 @@ ui <- function(id) {
           echarts4rOutput(ns("missing_data_counts_plot"))
         ),
         nav_panel(
-          title = tooltip(
-            trigger = list(
-              "Imputed",
-              icon("info-circle")
-            ),
-            "Multiple plot visualization."
-          ),
+          title = "Imputed",
           value = "Distribution",
           trelliscopeOutput(ns("missval_distribution_plot"), style = "height: 100%")
         ),
@@ -62,7 +56,7 @@ ui <- function(id) {
         id = ns("accordion"),
         multiple = FALSE,
         accordion_panel(
-          title = "Subset Missing Data",
+          title = "Subset by Missing Data",
           id = ns("subset"),
           selectInput(
             inputId = ns("valid_values_input"),
@@ -92,7 +86,7 @@ ui <- function(id) {
           )
         ),
         accordion_panel(
-          title = "Subset Peptides",
+          title = "Subset by Peptides",
           id = ns("peptides"),
           selectInput(
             inputId = ns("peptides_input"),

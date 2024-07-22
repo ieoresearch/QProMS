@@ -144,12 +144,13 @@ server <- function(id, r6) {
     
     observe({
       watch("stat")
-      updateSelectInput(inputId = "test_uni_input", choices = r6$contrasts)
+      updateSelectInput(inputId = "test_uni_input", choices = r6$contrasts, selected = r6$contrasts[1])
     })
     
     observe({
       watch("heatmap")
-      updateSelectInput(inputId = "clusters_input", choices = paste0("cluster_", 1:r6$clusters_number))
+      ch <- paste0("cluster_", 1:r6$clusters_number)
+      updateSelectInput(inputId = "clusters_input", choices = ch, selected = ch[1])
     })
     
     observeEvent(input$update ,{

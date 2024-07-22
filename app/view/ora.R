@@ -160,12 +160,14 @@ server <- function(id, r6) {
     
     observe({
       watch("stat")
-      updateSelectInput(inputId = "volcano_input", choices = unlist(map(r6$contrasts, ~ c(paste0(.x, "_up"), paste0(.x, "_down")))))
+      chs <- unlist(map(r6$contrasts, ~ c(paste0(.x, "_up"), paste0(.x, "_down"))))
+      updateSelectInput(inputId = "volcano_input", choices = chs, selected = chs[1])
     })
 
     observe({
       watch("heatmap")
-      updateSelectInput(inputId = "clusters_input", choices = paste0("cluster_", 1:r6$clusters_number))
+      chh <- paste0("cluster_", 1:r6$clusters_number)
+      updateSelectInput(inputId = "clusters_input", choices = chh, selected = chh[1])
     })
     
     observe({

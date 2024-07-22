@@ -126,7 +126,6 @@ ui <- function(id) {
               "NES" = "NES",
               "p.value" = "pvalue",
               "p.adjust" = "p.adjust",
-              "Enrichment Score" = "enrichmentScore",
               "Set Size" = "setSize"
             ), 
             selected = "NES"
@@ -157,16 +156,17 @@ server <- function(id, r6) {
       watch("genes")
       if(!is.null(r6$expdesign)) {
         if(input$by_cond_input){
-          updateSelectInput(inputId = "target", choices = unique(r6$expdesign$condition))
+          ch <- unique(r6$expdesign$condition)
+          updateSelectInput(inputId = "target", choices = ch, selected = ch[1])
         } else {
-          updateSelectInput(inputId = "target", choices = r6$expdesign$label)
+          updateSelectInput(inputId = "target", choices = r6$expdesign$label, selected = r6$expdesign$label[1])
         }
       }
     })
     
     observe({
       watch("stat")
-      updateSelectInput(inputId = "volcano_input", choices = r6$contrasts)
+      updateSelectInput(inputId = "volcano_input", choices = r6$contrasts, selected = r6$contrasts[1])
     })
 
     observeEvent(input$update ,{

@@ -131,7 +131,7 @@ server <- function(id, r6) {
     
     observe({
       watch("genes")
-      updateSelectInput(inputId = "contrast_input", choices = r6$all_test_combination)
+      updateSelectInput(inputId = "contrast_input", choices = r6$all_test_combination, selected = r6$all_test_combination[1])
     })
     
     observeEvent(input$update ,{
