@@ -61,7 +61,7 @@ ui <- function(id) {
                 ),
                 "If TRUE, use the Intensity mean of each condition."
               ),
-              value = FALSE
+              value = TRUE
             ),
             selectInput(
               inputId = ns("target"),

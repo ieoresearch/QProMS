@@ -1,6 +1,6 @@
 box::use(
-  shiny[moduleServer, NS, radioButtons, actionButton, hr, h3, br, div, observeEvent, req],
-  bslib[page_fluid, layout_columns],
+  shiny[moduleServer, NS, radioButtons, actionButton, hr, h3, h4, br, div, observeEvent, req, sliderInput],
+  bslib[page_fillable, layout_columns, card, card_header, card_body, accordion, accordion_panel, accordion_panel_close, accordion_panel_open, nav_select, tooltip],
   esquisse[palettePicker],
   viridis[viridis],
   purrr[map, set_names],
@@ -17,31 +17,55 @@ palette_choices <- map(
 #' @export
 ui <- function(id) {
   ns <- NS(id)
-  page_fluid(
-    title = "Settings", 
-    h3("Visual Setting"),
-    br(),
+  page_fillable(
     layout_columns(
-      palettePicker(
-        inputId = ns("palette"),
-        label = "Color Palettes",
-        choices = palette_choices,
-        selected = "D"
+      col_widths = c(12, -1, 10, -1, 12),
+      row_heights = c(1,10,1),
+      div(),
+      card(
+        card_header(h4(class = "text-center", "Settings")),
+        card_body(
+          layout_columns(
+            col_widths = c(-2, 8, -2, -2, 6, 2, -2, 12, -4, 2, 2, -4),
+            gap = "2rem",
+            row_heights = c(1, 1, 1, 1),
+            palettePicker(
+              inputId = ns("palette"),
+              label = "Color Palettes",
+              choices = palette_choices,
+              selected = "D"
+            ),
+            sliderInput(
+              inputId = ns("text_sixe"),
+              label = "Plots text size",
+              min = 4,
+              max = 24,
+              value = 12,
+              step = 1,
+              width = "100%"
+            ),
+            radioButtons(
+              inputId = ns("plot_format"),
+              label = "Plot extension",
+              choices = c("svg" = "svg", "png" = "canvas"),
+              selected = "svg"
+            ),
+            div(),
+            actionButton(
+              inputId = ns("update"),
+              label = "UPDATE",
+              class = "bg-primary",
+              width = "100%"
+            ),
+            actionButton(
+              inputId = ns("update"),
+              label = "Reset",
+              width = "100%"
+            )
+          )
+        )
       ),
-      radioButtons(
-        inputId = ns("plot_format"),
-        label = "Plot extension",
-        inline = TRUE,
-        choices = c("svg" = "svg", "png" = "canvas"),
-        selected = "svg"
-      )
-    ),
-    hr(),
-    actionButton(
-      inputId = ns("update"),
-      label = "UPDATE",
-      class = "bg-primary",
-      width = "300px"
+      div()
     )
   )
 }

@@ -742,7 +742,6 @@ QProMS <- R6Class(
           pageSizeOptions = c(6, 12, 18, 24),
           defaultPageSize = 12,
           onClick = "select",
-          defaultSelected = 1,
           defaultColDef = colDef(align = "center", minWidth = 200),
           columns = list(gene_names = colDef(
             name = "Gene names",
@@ -950,6 +949,11 @@ QProMS <- R6Class(
       } else {
         data <- self$imputed_data %>% 
           filter(label == labels)
+      }
+      
+      if(!self$is_imp) {
+        data <- data %>% 
+          filter(!imputed)
       }
       
       p <- data %>%

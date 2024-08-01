@@ -1,10 +1,11 @@
 box::use(
-  shiny[div, moduleServer, NS, renderUI, tags, uiOutput, showModal, removeModal, modalDialog, observeEvent, tagList, p, h1, actionButton, icon],
+  shiny[div, moduleServer, NS, strong, icon],
   bslib[page_navbar, page_sidebar, nav_panel, nav_item, sidebar, nav_spacer, page_fluid],
   reactable.extras[reactable_extras_dependency],
 )
 
 box::use(
+  app/view/home,
   app/view/preprocessing,
   app/view/correlation,
   app/view/upload,
@@ -25,14 +26,15 @@ box::use(
 ui <- function(id) {
   ns <- NS(id)
   page_navbar(
-    id = "app-upload-top_navigation",
-    title = "QProMS",
+    id = ns("top_navigation"),
+    title = strong("QProMS"),
     sidebar = NULL,
     header = list(
       reactable_extras_dependency()
     ),
     nav_spacer(),
-    nav_panel(title = "Upload", upload$ui(ns("upload"))),
+    nav_panel(title = "Home", home$ui(ns("home"))),
+    nav_panel(title = "Desing", upload$ui(ns("upload"))),
     nav_panel(title = "Preprocessing", preprocessing$ui(ns("preprocessing"))),
     nav_panel(title = "PCA & Correlation", correlation$ui(ns("correlation"))),
     nav_panel(title = "Rank", rank$ui(ns("rank"))),
@@ -41,57 +43,21 @@ ui <- function(id) {
     nav_panel(title = "Network", network$ui(ns("network"))),
     nav_panel(title = "ORA", ora$ui(ns("ora"))),
     nav_panel(title = "GSEA", gsea$ui(ns("gsea"))),
+    nav_spacer(),
     nav_panel(title = "", value = "Save Results", icon = icon("download"), page_fluid("Save Results")),
-    nav_panel(title = "", icon = icon("gear"), value = "Settings", settings$ui(ns("settings")))
+    nav_panel(title = "", value = "Settings", icon = icon("gear"), settings$ui(ns("settings")))
   )
 }
 
 #' @export
 server <- function(id) {
   moduleServer(id, function(input, output, session) {
-    ## Welcome banner that pop-up at the start of application.
-    showModal(
-      modalDialog(
-        tagList(
-          div(
-            class = "modal-banner",
-            h1("Welcome to QProMS App!")
-          ),
-          p(
-            paste(
-              "Welcome to Quantitative PROteomics Made Simple (QProMS). ",
-              "This Shiny app enables easy but powerful and reproducible ", 
-              "analyses for label-free proteomics data. It works out of ",  
-              "the box with major data-dependent and data-independent ",
-              "search engine results (MaxQuant, FragPipe, Spectronaut, ",
-              "DIA-NN, AlphaPept) as well as custom result tables. It ",
-              "can produce publication-quality figures and export HTML ", 
-              "reports and parameter files for sharing and reproducing ",
-              "results. It can handle multiple simultaneous comparisons ",
-              "between different experimental conditions."
-            )
-          )
-        ), 
-        easyClose = F,
-        size = "xl",
-        footer = tagList(
-          actionButton(session$ns("tutorial"), "Use Example Dataset", width = "250px"),
-          actionButton(
-            session$ns("show_dash"),
-            "Show Dashboard",
-            width = "250px",
-            class = "bg-primary"
-          )
-        )
-      )
-    )
-    observeEvent(input$show_dash, {
-      removeModal()
-    })
+    
     ## Generate new object
     object <- R6Class_QProMS$QProMS$new()
     ## Load modules server
-    upload$server("upload", r6 = object)
+    home$server("home", r6 = object, main_session = session)
+    upload$server("upload", r6 = object, main_session = session)
     preprocessing$server("preprocessing", r6 = object)
     correlation$server("correlation", r6 = object)
     rank$server("rank", r6 = object)
