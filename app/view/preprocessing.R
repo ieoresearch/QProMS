@@ -52,11 +52,16 @@ ui <- function(id) {
       )
     ),
     sidebar = sidebar(
+      actionButton(
+        inputId = ns("update"),
+        label = "UPDATE",
+        class = "bg-primary"
+      ),
       accordion(
         id = ns("accordion"),
         multiple = FALSE,
         accordion_panel(
-          title = "Subset by Missing Data",
+          title = "Subset by Valid Values",
           id = ns("subset"),
           selectInput(
             inputId = ns("valid_values_input"),
@@ -192,11 +197,6 @@ ui <- function(id) {
             )
           )
         )
-      ),
-      actionButton(
-        inputId = ns("update"),
-        label = "UPDATE",
-        class = "bg-primary"
       )
     )
   )

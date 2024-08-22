@@ -26,6 +26,10 @@ ui <- function(id) {
       )
     ),
     sidebar = sidebar(
+      input_task_button(
+        id = ns("update"),
+        label = "UPDATE"
+      ),
       accordion(
         id = ns("accordion"),
         multiple = FALSE,
@@ -139,10 +143,6 @@ ui <- function(id) {
             step = 1
           )
         )
-      ),
-      input_task_button(
-        id = ns("update"),
-        label = "UPDATE"
       )
     )
   )

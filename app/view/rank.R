@@ -31,6 +31,11 @@ ui <- function(id) {
       )
     ),
     sidebar = sidebar(
+      actionButton(
+        inputId = ns("update"),
+        label = "UPDATE",
+        class = "bg-primary"
+      ),
       accordion(
         id = ns("accordion"),
         multiple = FALSE,
@@ -57,14 +62,8 @@ ui <- function(id) {
           ),
           selectInput(
             inputId = ns("selections"),
-            label = tooltip(
-              trigger = list(
-                "Selection",
-                icon("info-circle")
-              ),
-              "The current selection is saved for network and functional analysis. If you change inputs press 'UPDATE' to validate the new selection."
-            ),
-            choices = c("From top" = "top", "From bottom" = "bot"),
+            label = "Highlights form",
+            choices = c("Top Rank" = "top", "Bottom Rank" = "bot"),
             selected = "top", 
             width = "auto"
           ),
@@ -77,11 +76,6 @@ ui <- function(id) {
             step = 1
           )
         )
-      ),
-      actionButton(
-        inputId = ns("update"),
-        label = "UPDATE",
-        class = "bg-primary"
       )
     )
   )

@@ -80,10 +80,9 @@ ui <- function(id) {
               "analyses for label-free proteomics data. It works out of ",  
               "the box with major data-dependent and data-independent ",
               "search engine results (MaxQuant, FragPipe, Spectronaut, ",
-              "DIA-NN) as well as custom result tables. It ",
-              "can produce publication-quality figures and export HTML ", 
-              "reports and parameter files for sharing and reproducing ",
-              "results. "
+              "DIA-NN) as well as custom result tables. The application ",
+              "exploit high-quality interactive figures, produce HTML ", 
+              "reports and parameter files for sharing and reproducing results."
             )
           )
         )

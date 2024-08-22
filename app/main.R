@@ -7,6 +7,7 @@ box::use(
 box::use(
   app/view/home,
   app/view/preprocessing,
+  app/view/pca,
   app/view/correlation,
   app/view/upload,
   app/view/rank,
@@ -36,7 +37,8 @@ ui <- function(id) {
     nav_panel(title = "Home", home$ui(ns("home"))),
     nav_panel(title = "Desing", upload$ui(ns("upload"))),
     nav_panel(title = "Preprocessing", preprocessing$ui(ns("preprocessing"))),
-    nav_panel(title = "PCA & Correlation", correlation$ui(ns("correlation"))),
+    nav_panel(title = "PCA", pca$ui(ns("pca"))),
+    nav_panel(title = "Correlation", correlation$ui(ns("correlation"))),
     nav_panel(title = "Rank", rank$ui(ns("rank"))),
     nav_panel(title = "Volcano", statistics$ui(ns("statistics"))),
     nav_panel(title = "Heatmap", heatmap$ui(ns("heatmap"))),
@@ -59,6 +61,7 @@ server <- function(id) {
     home$server("home", r6 = object, main_session = session)
     upload$server("upload", r6 = object, main_session = session)
     preprocessing$server("preprocessing", r6 = object)
+    pca$server("pca", r6 = object)
     correlation$server("correlation", r6 = object)
     rank$server("rank", r6 = object)
     statistics$server("statistics", r6 = object)

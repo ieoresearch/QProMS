@@ -35,6 +35,10 @@ ui <- function(id) {
       )
     ),
     sidebar = sidebar(
+      input_task_button(
+        id = ns("update"),
+        label = "UPDATE"
+      ),
       accordion(
         id = ns("accordion"),
         multiple = FALSE,
@@ -50,6 +54,49 @@ ui <- function(id) {
               "Heatmap" = "multivariate"
             ), 
             selected = "univariate"
+          ),
+          conditionalPanel(
+            condition = "input.strategy == 'top_rank'",
+            ns = ns,
+            input_switch(
+              id = ns("by_cond_input"),
+              label = tooltip(
+                trigger = list(
+                  "Merge Condition",
+                  icon("info-circle")
+                ),
+                "If TRUE, use the Intensity mean of each condition."
+              ),
+              value = FALSE
+            ),
+            selectInput(
+              inputId = ns("target"),
+              label = "Genes from",
+              choices = NULL,
+              selected = NULL, 
+              width = "auto"
+            ),
+            selectInput(
+              inputId = ns("selections"),
+              label = tooltip(
+                trigger = list(
+                  "Selection",
+                  icon("info-circle")
+                ),
+                "This selection is used for generate the network plot. Press 'UPDATE' to validate a new selection."
+              ),
+              choices = c("From top" = "top", "From bottom" = "bot"),
+              selected = "top", 
+              width = "auto"
+            ),
+            sliderInput(
+              inputId = ns("top_n_slider"),
+              label = "n % of proteins",
+              min = 1,
+              max = 50,
+              value = 10,
+              step = 1
+            )
           ),
           conditionalPanel(
             condition = "input.strategy == 'univariate'",
@@ -129,10 +176,6 @@ ui <- function(id) {
             value = FALSE
           )
         )
-      ),
-      input_task_button(
-        id = ns("update"),
-        label = "UPDATE"
       )
     )
   )
@@ -141,6 +184,17 @@ ui <- function(id) {
 #' @export
 server <- function(id, r6) {
   moduleServer(id, function(input, output, session) {
+    
+    observe({
+      watch("genes")
+      if(!is.null(r6$expdesign)) {
+        if(input$by_cond_input){
+          updateSelectInput(inputId = "target", choices = unique(r6$expdesign$condition))
+        } else {
+          updateSelectInput(inputId = "target", choices = r6$expdesign$label)
+        }
+      }
+    })
     
     observe({
       watch("stat")
@@ -158,7 +212,22 @@ server <- function(id, r6) {
       r6$pdb_database <- input$db_source
       r6$network_uni_direction <- input$ui_direction_input
       r6$network_score_thr <- input$score_thr
-      focus_net <- "top_rank"
+      
+      if(r6$network_from_statistic == "top_rank") {
+        r6$protein_rank_target <- input$target
+        r6$protein_rank_by_cond <- input$by_cond_input
+        r6$protein_rank_selection <- input$selections
+        r6$protein_rank_top_n <- as.numeric(input$top_n_slider) / 100
+        if(!is.null(r6$data)) {
+          r6$rank_protein(
+            target = r6$protein_rank_target,
+            by_condition = r6$protein_rank_by_cond,
+            selection = r6$protein_rank_selection,
+            n_perc = r6$protein_rank_top_n
+          )
+        }
+        focus_net <- "top_rank"
+      }
       
       if(r6$network_from_statistic == "univariate") {
         r6$network_focus_uni <- input$test_uni_input

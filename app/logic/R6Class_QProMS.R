@@ -689,7 +689,8 @@ QProMS <- R6Class(
           slice_tail(prop = n_perc) %>%
           pull(gene_names)
       } 
-      self$rank_data <- data
+      self$rank_data <- data %>% 
+        mutate(highlighted = gene_names %in% selected_list)
       self$protein_rank_list <- selected_list
     },
     shiny_wrap_workflow = function() {
