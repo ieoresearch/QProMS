@@ -161,12 +161,22 @@ This page performs over-representation analysis with Gene Ontology (GO) terms. I
 
 If multiple comparisons are carried out, one may select multiple contrasts to generate multiple plots.
 
+In "parameters", the user may define the "simplify threshold", the user may select how much grouping of GO terms is performed. At high values, for example, "40S ribosome", "80S ribosome" may be grouped into "ribosome" or even "translation". 
+
 In visual parameters, the user may select whether the bar chart displays the fold enrichment, statistical significance (-log of p value or FDR-corrected p-value) or simple count of proteins.
 
 The analysis is performed against a background defined as XXXX
 
 
 #### Geneset enrichment analysis (GSEA)
+
+This page performs geneset enrichment analysis (GSEA) with Gene Ontology (GO) terms. It can be used to identify which biological processes, molecular functions or cellular components are enriched or depleted in the dataset. Unlike ORA, GSEA is based on the list of all proteins in one or more conditions and it then finds which GO terms are more likely to be among the most abundant, expressed as a normalized enriched score (NES). Thus, it assesses whether proteins associated with predefined gene sets (e.g., pathways or functional categories) are predominantly found at the top or bottom of the ranked list.
+
+In "parameters", the user may define the "simplify threshold", the user may select how much grouping of GO terms is performed. At high values, for example, "40S ribosome", "80S ribosome" may be grouped into "ribosome" or even "translation". 
+
+The user may define the level of significance (Alpha) and the FDR correction method. In visual parameters, the user may select whether the bar chart displays the normalized enriched score, statistical significance (-log of p value or FDR-corrected p-value) or the number of proteins making up each set.
+
+** This is a bit more computationally intensive than other functions in QProMS, so the analysis may take a few minutes.**
 
 
 #### Report generation
