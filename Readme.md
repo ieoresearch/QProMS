@@ -137,7 +137,15 @@ The "paired" option is off by default but can be toggled if a paired test is to 
 Alpha is the level of significance after correction for multiple testing (Truncation) is applied. Several corrections are available, with the default being Benjamini/Hochberg FDR correction.
 
 #### Heatmap
+The heatmap page provides clustering analysis based on protein intensities. The user selects the number of clusters and the hierarchical clustering method from those available in R's hclust function.
 
+The default, "complete", computes all pairwise dissimilarities between the elements in cluster A and the elements in cluster B, and considers the largest value (i.e., maximum value) of these dissimilarities as the distance between the two clusters. It tends to produce more compact clusters."Ward's method aims to minimize the total within-cluster variance. Both methods are commonly used in proteomics research.
+
+The user may also select significance threshold (alpha) and FDR correction method.
+
+The cluster profile panel provides profile plots for clusters with their average abundance and 95% confidence intervals across conditions. 
+
+After selecting one or more proteins of interest in the table panel, the profile plots of individual proteins may be visualized in the protein profile panel.
 
 #### Network
 
