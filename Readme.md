@@ -29,13 +29,15 @@ The app guides you through a typical analysis workflow for proteomics:
 4. Network and functional analysis
 5. Exporting results.
 
+The app works on any proteomics search engine result table, provided it has a column with Protein IDs/Gene names and intensity/LFQ/iBAQ or similar columns corresponding to each experiment. It requires a quantitative experiment performed in at least triplicates in 2 conditions or more to compare.
+
 In all sections, the options pre-selected are defaults that should apply to most scenarios including global proteome profiling, AP-MS and proximity labelling MS. 
 
 In the global settings in the top-right wheel, the user may change palettes for the plots, plot text size, and whether plots will be downloaded in svg or png format.
 
 ### Upload page
 
-Upload search engine results. Files should have a column for gene IDs, and columns for quantitation of each protein in the respective conditions. Several search engines are supported by default. File names are arbitrary, but the files to upload for each search engine are
+Upload search engine results. Files should have a column for gene IDs, and columns for quantitation of each protein in the respective conditions. Several search engines are supported by default. Other tables can also be uploaded and then fields defined manually by selecting the appropriate columns. File names are arbitrary, but the files to upload for each search engine are
 
 
 | Software    | File to upload (default name)  | Comment                                                                                                                                                            | 
