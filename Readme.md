@@ -29,7 +29,9 @@ The app guides you through a typical analysis workflow for proteomics:
 4. Network and functional analysis
 5. Exporting results.
 
-In all sections, the options pre-selected are defaults that should apply to most scenarios including global proteome profiling, AP-MS and proximity labelling MS.
+In all sections, the options pre-selected are defaults that should apply to most scenarios including global proteome profiling, AP-MS and proximity labelling MS. 
+
+In the global settings in the top-right wheel, the user may change palettes for the plots, plot text size, and whether plots will be downloaded in svg or png format.
 
 #### Upload page
 
@@ -57,13 +59,13 @@ After clicking on "upload" you can edit your experimental design in the table th
 | key         | Unique name for the column that is only used by QProMS (not editable)                                                                                                     | 
 | condition   | The experimental condition (e.g. control/tumor, time point etc). Can be letters and/or numbers. All replicates of one condition must have the same condition name         |
 | keep        | Whether to keep or discard this column for the QProMS analysis                                                                                                            |
+Set your experimental conditions, click on "verify design table" and then "start".
 
-Once you are done editing the experimental design, click "Apply". The green "Start" button should appear. Clicking it will unlock the rest of the app.
 
 #### Preprocessing
 
 
-The "filter data" page displays protein counts, upset plot, intensity distributions and the distribution of coefficients of variation (CVs). 
+The "Preprocessing" page displays protein counts, upset plot, intensity distributions and the distribution of coefficients of variation (CVs). 
 
 The left panel for "parameters" can be expanded to reveal some settings that can be changed. All settings will propagate through later steps of the analysis and saved in the report.
 
@@ -77,15 +79,21 @@ Other options available here are dependent on the search engine used in the uplo
 
 - For FragPipe, contaminants are automatically removed based on the [CrapOme list](https://reprint-apms.org/?q=about) utilized by FragPipe and Philosopher during database construction.
 
+#### Imputation
 
-
-In the missing data page, the user can analyse the distribution of missing values and perform imputation. The plots highlight the intensity distributions and the effects of imputation. The contribution from imputation can be highlighted in the "Effect of imputation: after" plot. The distribution can be broken down by sample by clicking on the bar at the bottom of the page.
-
-In the blue ribbon for "parameters" the algorithm for imputation may be selected. There are 2 modes: mixed imputation, introduced in the [QProMS publication](XXX), and the Perseus algorithm, adapted from [here](http://www.coxdocs.org/doku.php?id=perseus:user:activities:matrixprocessing:imputation:replacemissingfromgaussian). In the Perseus algorithm, missing values are replaced by sampling from a down-shifted gaussian distribution.
+The algorithm for imputation may be selected. There are 2 modes: mixed imputation, introduced in the [QProMS publication](XXX), and the Perseus algorithm, adapted from [here](http://www.coxdocs.org/doku.php?id=perseus:user:activities:matrixprocessing:imputation:replacemissingfromgaussian). In the Perseus algorithm, missing values are replaced by sampling from a down-shifted gaussian distribution. The user may also opt for no imputation.
 
 The mean of the imputed distribution can be positioned relative to the mean experimental intensity in terms of standard deviations with the "down shift" parameter. The width of the imputed distribution can be adjusted by the "scale" parameter.
 
 Mixed imputation recognises two types of missing data: missing (MAR) at random and missing not at random (MNAR). Missing at random values (i.e. those missing from a single replica in a condition) are imputed with the mean of the value of that protein in the other replicas. Missing not at random (completely missing from a particular experimental condition) are imputed with the Perseus-style algorithm.
+
+
+
+
+The missing data tab presents an UpSet plot so that the user may verify which experiments are mostly affected by missing values.
+
+In the imputed tab the user can visualize the distribution of missing values and the effects imputation. The contribution from imputation can be highlighted in the "Effect of imputation: after" plot. The distribution per experiment can be visualized by scrolling through the plots in the trelliscope panel.
+
 
 In the last panel, the table post data filtering and imputation (if imputation is used) is available for export and interactive searching.
 
@@ -103,7 +111,11 @@ Users can select the type of correlation analysis by clicking on the parameters 
 
 #### Rank
 
+The rank page visualizes the abundance rank of each protein. In the Table panel, the user may search and highlight one or more protein of interest which are then displayed in the main plot.
 
+The "merge condition" toggle refers to whether abundances are plotted from individual experiments of from the mean of all experiments in one condition.
+
+The "Highlights from" proteins, typycally the top-ranked N%, can be forwarded to the Network or ORA pages for functional analyses.
 
 
 #### Volcano
@@ -123,4 +135,19 @@ The "paired" option is off by default but can be toggled if a paired test is to 
 "Fold change" is the minimum fold change (in log2 units) to consider as significant.
 
 Alpha is the level of significance after correction for multiple testing (Truncation) is applied. Several corrections are available, with the default being Benjamini/Hochberg FDR correction.
+
+#### Heatmap
+
+
+#### Network
+
+
+#### Over-representation analysis (ORA)
+
+
+
+#### Geneset enrichment analysis (GSEA)
+
+
+#### Report generation
 
