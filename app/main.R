@@ -69,7 +69,7 @@ server <- function(id) {
     network$server("network", r6 = object)
     ora$server("ora", r6 = object)
     gsea$server("gsea", r6 = object)
-    
+    options(shiny.maxRequestSize=10000*1024^2)
     settings$server("settings", r6 = object)
   })
 }
