@@ -151,7 +151,7 @@ After selecting one or more proteins of interest in the table panel, the profile
 
 The network page can be used to infer protein-protein interactions. The proteins to analyse can be selected from what is enriched in the volcano analysis, the top ranking proteins, or from specific clusters in the heatmap.
 
-The view then produces a network of proteins where the edges are protein pairs annotated in [String](https://string-db.org) (or [CORUM](https://mips.helmholtz-muenchen.de/corum/), if added to the selection) and the edge size is the [String score](https://string-db.org/cgi/help?sessionId=b8E7e9gCqSJu)
+The view then produces a network of proteins where the edges are protein pairs annotated in [String](https://string-db.org) (or [CORUM](https://mips.helmholtz-muenchen.de/corum/), if added to the selection) and the edge size is the [String score](https://string-db.org/cgi/help?sessionId=b8E7e9gCqSJu).
 
 This may be used as a starting point for further network analysis, for example in Cytoscape.
 
@@ -176,7 +176,7 @@ In "parameters", the user may define the "simplify threshold", the user may sele
 
 The user may define the level of significance (Alpha) and the FDR correction method. In visual parameters, the user may select whether the bar chart displays the normalized enriched score, statistical significance (-log of p value or FDR-corrected p-value) or the number of proteins making up each set.
 
-** This is a bit more computationally intensive than other functions in QProMS, so the analysis may take a few minutes.**
+**This is a bit more computationally intensive than other functions in QProMS, so the analysis may take a few minutes.**
 
 
 ### Report generation
