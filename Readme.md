@@ -44,7 +44,7 @@ Upload search engine results. Files should have a column for gene IDs, and colum
 |-------------|--------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------| 
 | MaxQuant    | ProteinGroups.txt              | Must contain "Gene Names" column. QProMS includes automatic parsing of reverse, contaminants and only identified by site and handling of ambiguous protein groups. |
 | FragPipe    | combined_protein.tsv           | QProMS has automatic annotation of contaminants included by Philosopher/FragPipe.  |
-| Spectronaut |                                |  | 
+| Spectronaut | Report.tsv                     |  | 
 | Dia-NN      | report.unique_genes_matrix.txt | |  
 | AlphaPept   | results_proteins.csv           | |  
 
@@ -71,7 +71,7 @@ The "Preprocessing" page displays protein counts, upset plot, intensity distribu
 
 The left panel for "parameters" can be expanded to reveal some settings that can be changed. All settings will propagate through later steps of the analysis and saved in the report.
 
-The user can tweak filtering based by valid values based on percentage valid values in at least one experimmental condition (group), in all groups, or in total.
+The user can tweak filtering of proteins on valid values based on how often they are observed in at least one experimmental condition (group), in all groups, or in total.
 
 Normalization across samples using variance stabilizing normalization (VSN) can be toggled on here.
 
@@ -81,20 +81,18 @@ Other options available here are dependent on the search engine used in the uplo
 
 - For FragPipe, contaminants are automatically removed based on the [CrapOme list](https://reprint-apms.org/?q=about) utilized by FragPipe and Philosopher during database construction.
 
-### Imputation
+#### Imputation
 
-The algorithm for imputation may be selected. There are 2 modes: mixed imputation, introduced in the [QProMS publication](XXX), and the Perseus algorithm, adapted from [here](http://www.coxdocs.org/doku.php?id=perseus:user:activities:matrixprocessing:imputation:replacemissingfromgaussian). In the Perseus algorithm, missing values are replaced by sampling from a down-shifted gaussian distribution. The user may also opt for no imputation.
+From within the preprocessing page, the algorithm for imputation may be selected. There are 2 modes: mixed imputation, introduced in the [QProMS publication](XXX), and the Perseus algorithm, adapted from [here](http://www.coxdocs.org/doku.php?id=perseus:user:activities:matrixprocessing:imputation:replacemissingfromgaussian). In the Perseus algorithm, missing values are replaced by sampling from a down-shifted gaussian distribution. The user may also opt for no imputation.
 
 The mean of the imputed distribution can be positioned relative to the mean experimental intensity in terms of standard deviations with the "down shift" parameter. The width of the imputed distribution can be adjusted by the "scale" parameter.
 
 Mixed imputation recognises two types of missing data: missing (MAR) at random and missing not at random (MNAR). Missing at random values (i.e. those missing from a single replica in a condition) are imputed with the mean of the value of that protein in the other replicas. Missing not at random (completely missing from a particular experimental condition) are imputed with the Perseus-style algorithm.
 
 
-
-
 The missing data tab presents an UpSet plot so that the user may verify which experiments are mostly affected by missing values.
 
-In the imputed tab the user can visualize the distribution of missing values and the effects imputation. The contribution from imputation can be highlighted in the "Effect of imputation: after" plot. The distribution per experiment can be visualized by scrolling through the plots in the trelliscope panel.
+In the imputed tab the user can visualize the distribution of missing values and the effects imputation. The contribution from imputation can be highlighted in the "Imuted" plot. The distribution per experiment can be visualized by scrolling through the plots in the trelliscope panel.
 
 
 In the last panel, the table post data filtering and imputation (if imputation is used) is available for export and interactive searching.
@@ -167,7 +165,7 @@ In "parameters", the user may define the "simplify threshold", the user may sele
 
 In visual parameters, the user may select whether the bar chart displays the fold enrichment, statistical significance (-log of p value or FDR-corrected p-value) or simple count of proteins.
 
-The analysis is performed against a background defined as XXXX
+The background may be set to whole proteome or the list of proteins from the experiment.
 
 
 ### Geneset enrichment analysis (GSEA)
