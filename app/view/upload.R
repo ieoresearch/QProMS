@@ -204,7 +204,7 @@ server <- function(id, r6, main_session) {
     })
     
     observeEvent(input$start, {
-      if(!is.null(input$log_transform) && r6$identify_table_status == "danger") {
+      if(!is.null(input$log_transform) && r6$identify_table_status == "info") {
         r6$log_transform <- input$log_transform
       } else {
         r6$log_transform <- TRUE

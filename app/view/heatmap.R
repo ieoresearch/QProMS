@@ -62,7 +62,7 @@ ui <- function(id) {
           selectInput(
             inputId = ns("clust_method"),
             label = "HClust method",
-            choices = c("complete", "single", "average", "ward.D2", "mcquitty"),
+            choices = c("complete (Default)" = "complete", "average", "ward.D2", "mcquitty"),
             selected = "complete"
           ),
           input_switch(
@@ -86,7 +86,7 @@ ui <- function(id) {
             inputId = ns("truncation_input_milti"),
             label = "Truncation",
             choices = c(
-              "Benjamini & Hochberg" = "BH",
+              "BH (Default)" = "BH",
               "Bonferroni" = "bonferroni",
               "Holm (1979)" = "holm",
               "Hochberg (1988)" = "hochberg",
