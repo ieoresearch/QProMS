@@ -17,6 +17,7 @@ box::use(
   app/view/ora,
   app/view/gsea,
   app/view/settings,
+  app/view/download,
 )
 
 box::use(
@@ -46,7 +47,7 @@ ui <- function(id) {
     nav_panel(title = "ORA", ora$ui(ns("ora"))),
     nav_panel(title = "GSEA", gsea$ui(ns("gsea"))),
     nav_spacer(),
-    nav_panel(title = "", value = "Save Results", icon = icon("download"), page_fluid("Save Results")),
+    nav_panel(title = "", value = "Save Results", icon = icon("download"), download$ui(ns("download"))),
     nav_panel(title = "", value = "Settings", icon = icon("gear"), settings$ui(ns("settings")))
   )
 }
@@ -54,7 +55,8 @@ ui <- function(id) {
 #' @export
 server <- function(id) {
   moduleServer(id, function(input, output, session) {
-    
+    ## Expand Shiny limits for upload
+    options(shiny.maxRequestSize=10000*1024^2)
     ## Generate new object
     object <- R6Class_QProMS$QProMS$new()
     ## Load modules server
@@ -69,7 +71,7 @@ server <- function(id) {
     network$server("network", r6 = object)
     ora$server("ora", r6 = object)
     gsea$server("gsea", r6 = object)
-    options(shiny.maxRequestSize=10000*1024^2)
+    download$server("download", r6 = object)
     settings$server("settings", r6 = object)
   })
 }

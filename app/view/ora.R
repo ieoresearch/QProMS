@@ -153,7 +153,7 @@ ui <- function(id) {
             inputId = ns("truncation_input"),
             label = "Truncation",
             choices = c(
-              "Benjamini & Hochberg" = "BH",
+              "BH (Default)" = "BH",
               "Bonferroni" = "bonferroni",
               "Holm (1979)" = "holm",
               "Hochberg (1988)" = "hochberg",

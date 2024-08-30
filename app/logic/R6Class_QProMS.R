@@ -26,7 +26,8 @@ box::use(
 )
 
 box::use(
-  app/static/inputs_type_lists
+  app/static/inputs_type_lists,
+  app/static/contaminants
 )
 
 #' @export
@@ -48,6 +49,7 @@ QProMS <- R6Class(
     organism = NULL, 
     expdesign = NULL,
     plot_format = "svg",
+    plot_font_size = 16,
     palette = "D",
     color_palette = NULL,
     #################################
@@ -275,9 +277,9 @@ QProMS <- R6Class(
       }
       
       # If no table type matches, return the collected error messages
-      self$identify_table_status <- "danger"
+      self$identify_table_status <- "info"
       self$input_type <- "External"
-      return(list(status = "danger", messages = error_messages))
+      return(list(status = "info", messages = error_messages))
     },
     check_intensity_regex = function() {
       regex_vec <- flatten_chr(inputs_type_lists$intensity_list %>% keep_at(self$input_type))
@@ -337,7 +339,7 @@ QProMS <- R6Class(
         intensity_cols <- intensity_type
       }
       
-      table <- tibble::tibble("keep" = TRUE, "condition" = "", "key" = intensity_cols) %>% 
+      table <- tibble("keep" = TRUE, "condition" = "", "key" = intensity_cols) %>% 
         rhandsontable(width = "100%", stretchH = "all", height = 500) %>%
         hot_col("key", readOnly = TRUE)
       
@@ -522,17 +524,21 @@ QProMS <- R6Class(
       
       data <- self$filtered_data
       
-      cleaned_data <- data %>%
-        # Mutate potential_contaminant based on gene_names and rescue_cont
-        mutate(`Potential contaminant` = case_when(
-          gene_names %in% rescue_cont ~ "", 
-          TRUE ~ `Potential contaminant`
-        )) %>%
-        # Remove reverse, potential contaminant and only identified by site based on user input
-        {if (rev) filter(., `Reverse` != "+") else .} %>%
-        {if (cont) filter(., `Potential contaminant` != "+") else .} %>%
-        {if (oibs) filter(., `Only identified by site` != "+") else .}
-      
+      if(self$input_type == "MaxQuant") {
+        cleaned_data <- data %>%
+          # Mutate potential_contaminant based on gene_names and rescue_cont
+          mutate(`Potential contaminant` = case_when(
+            gene_names %in% rescue_cont ~ "", 
+            TRUE ~ `Potential contaminant`
+          )) %>%
+          # Remove reverse, potential contaminant and only identified by site based on user input
+          {if (rev) filter(., `Reverse` != "+") else .} %>%
+          {if (cont) filter(., `Potential contaminant` != "+") else .} %>%
+          {if (oibs) filter(., `Only identified by site` != "+") else .}
+      } else {
+        cleaned_data <- data %>% 
+          filter(!gene_names %in% contaminants$contaminant_list) 
+      }
       self$filtered_data <- cleaned_data
     },
     normalization = function(norm_methods) {
@@ -703,12 +709,12 @@ QProMS <- R6Class(
           pep_filter = self$pep_filter,
           pep_thr = self$pep_thr
         )
-        self$subset_contaminant(
-          rev = self$rev,
-          cont = self$cont,
-          oibs = self$oibs
-        )
       }
+      self$subset_contaminant(
+        rev = self$rev,
+        cont = self$cont,
+        oibs = self$oibs
+      )
       self$normalization(norm_methods = self$norm_methods)
       self$imputation(
         imp_methods = self$imp_methods,
@@ -780,22 +786,25 @@ QProMS <- R6Class(
         e_tooltip(trigger = "item") %>%
         e_grid(containLabel = TRUE) %>%
         e_color(self$color_palette) %>%
+        e_legend(textStyle = list(fontSize = self$plot_font_size)) %>%
         e_y_axis(
           name = "Counts",
           nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
             fontWeight = "bold",
-            fontSize = 16,
-            lineHeight = 60
+            fontSize = self$plot_font_size,
+            lineHeight = 6 * self$plot_font_size
           )
         ) %>%
         e_x_axis(
           name = "Replicate",
           nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
             fontWeight = "bold",
-            fontSize = 14,
-            lineHeight = 60
+            fontSize = self$plot_font_size,
+            lineHeight = 4 * self$plot_font_size
           )
         ) %>% 
         e_toolbox_feature(feature = c("saveAsImage", "restore", "dataView")) %>% 
@@ -806,8 +815,7 @@ QProMS <- R6Class(
     plot_distribution = function() {
       
       if(is.null(self$normalized_data)){return(NULL)}
-      intervals <- length(unique(self$expdesign$replicate))
-      
+
       p <- self$normalized_data %>%
         mutate(intensity = round(intensity, 2)) %>%
         group_by(condition, label) %>%
@@ -822,16 +830,18 @@ QProMS <- R6Class(
         e_tooltip(trigger = "item") %>%
         e_grid(containLabel = TRUE) %>%
         e_color(self$color_palette) %>%
+        e_legend(show = FALSE) %>%
         e_y_axis(
           name = "log2 Intensity",
           nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
             fontWeight = "bold",
-            fontSize = 16,
-            lineHeight = 60
+            fontSize = self$plot_font_size,
+            lineHeight = 6 * self$plot_font_size
           )
         ) %>% 
-        e_x_axis(axisLabel = list(interval = intervals)) %>% 
+        e_x_axis(show = FALSE) %>% 
         e_toolbox_feature(feature = "saveAsImage") %>% 
         e_show_loading(text = "Loading...", color = "#0d6efd")
       
@@ -854,15 +864,18 @@ QProMS <- R6Class(
         e_tooltip(trigger = "item") %>%
         e_grid(containLabel = TRUE) %>%
         e_color(self$color_palette) %>%
+        e_legend(textStyle = list(fontSize = self$plot_font_size)) %>%
         e_y_axis(
           name = "Counts",
           nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
             fontWeight = "bold",
-            fontSize = 16,
-            lineHeight = 60
+            fontSize = self$plot_font_size,
+            lineHeight = 6 * self$plot_font_size
           )
         ) %>% 
+        e_x_axis(axisLabel = list(fontSize = self$plot_font_size)) %>% 
         e_toolbox_feature(feature = c("saveAsImage", "restore", "dataView")) %>% 
         e_show_loading(text = "Loading...", color = "#0d6efd")
       
@@ -889,15 +902,18 @@ QProMS <- R6Class(
           itemStyle = list(borderWidth = 3)
         ) %>%  
         e_tooltip(trigger = "axis") %>% 
+        e_legend(show = FALSE) %>%
         e_y_axis(
           name = "Density",
           nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
             fontWeight = "bold",
-            fontSize = 16,
-            lineHeight = 60
+            fontSize = self$plot_font_size,
+            lineHeight = 6 * self$plot_font_size
           )
         ) %>% 
+        e_x_axis(axisLabel = list(fontSize = self$plot_font_size)) %>% 
         e_grid(containLabel = TRUE) %>%
         e_color(self$color_palette) %>% 
         e_toolbox_feature(feature = "saveAsImage") %>% 
@@ -922,18 +938,19 @@ QProMS <- R6Class(
         e_charts(label, renderer = self$plot_format) %>%
         e_bar(Valid, stack = "grp", bind = perc_present) %>%
         e_bar(Missing, stack = "grp", bind = perc_missing) %>%
-        e_x_axis(name = "", axisLabel = list(interval = 0, rotate = 45)) %>%
-        e_y_axis(name = "Counts") %>%
+        e_x_axis(name = "", axisLabel = list(interval = 0, rotate = 45, fontSize = self$plot_font_size)) %>%
         e_tooltip(trigger = "item") %>%
         e_color(c("#0d6efd", "#6c757d")) %>% 
         e_grid(containLabel = TRUE) %>%
+        e_legend(textStyle = list(fontSize = self$plot_font_size)) %>%
         e_y_axis(
           name = "Counts",
           nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
             fontWeight = "bold",
-            fontSize = 16,
-            lineHeight = 60
+            fontSize = self$plot_font_size,
+            lineHeight = 6 * self$plot_font_size
           )
         ) %>% 
         e_toolbox_feature(feature = c("saveAsImage", "restore", "dataView")) %>% 
@@ -963,24 +980,27 @@ QProMS <- R6Class(
         group_by(missing_value) %>%
         e_charts(renderer = self$plot_format) %>%
         e_histogram(intensity, breaks = pretty(0:40, n = 100)) %>%
+        e_legend(textStyle = list(fontSize = self$plot_font_size)) %>%
         e_y_axis(
           name = "Counts",
           nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
             fontWeight = "bold",
-            fontSize = 16,
-            lineHeight = 60
+            fontSize = self$plot_font_size,
+            lineHeight = 6 * self$plot_font_size
           )
         ) %>%  
         e_x_axis(
           name = "log2 Intensity",
           nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
           min = 10, 
           max = 40,
           nameTextStyle = list(
             fontWeight = "bold",
-            fontSize = 14,
-            lineHeight = 60
+            fontSize = self$plot_font_size,
+            lineHeight = 4 * self$plot_font_size
           )
         ) %>%
         e_grid(containLabel = TRUE) %>%
@@ -1094,22 +1114,25 @@ QProMS <- R6Class(
         }
       ")
           ) %>%
+          e_legend(textStyle = list(fontSize = self$plot_font_size)) %>%
           e_x_axis(
             name = paste0("PC1 - ", pca_var_perc[1], " %"),
             nameLocation = "center",
+            axisLabel = list(fontSize = self$plot_font_size),
             nameTextStyle = list(
               fontWeight = "bold",
-              fontSize = 15,
-              lineHeight = 50
+              fontSize = self$plot_font_size,
+              lineHeight = 4 * self$plot_font_size
             )
           ) %>%
           e_y_axis(
             name = paste0("PC2 - ", pca_var_perc[2], " %"),
             nameLocation = "center",
+            axisLabel = list(fontSize = self$plot_font_size),
             nameTextStyle = list(
               fontWeight = "bold",
-              fontSize = 15,
-              lineHeight = 50
+              fontSize = self$plot_font_size,
+              lineHeight = 6 * self$plot_font_size
             )
           ) %>% 
           e_color(self$color_palette) %>% 
@@ -1129,30 +1152,34 @@ QProMS <- R6Class(
         }
       ")
           ) %>% 
+          e_legend(textStyle = list(fontSize = self$plot_font_size)) %>%
           e_x_axis_3d(
             name = paste0("PC1 - ", pca_var_perc[1], " %"),
             nameLocation = "center",
+            axisLabel = list(fontSize = self$plot_font_size),
             nameTextStyle = list(
               fontWeight = "bold",
-              fontSize = 15,
+              fontSize = self$plot_font_size,
               lineHeight = 50
             )
           ) %>%
           e_y_axis_3d(
             name = paste0("PC2 - ", pca_var_perc[2], " %"),
             nameLocation = "center",
+            axisLabel = list(fontSize = self$plot_font_size),
             nameTextStyle = list(
               fontWeight = "bold",
-              fontSize = 15,
+              fontSize = self$plot_font_size,
               lineHeight = 50
             )
           ) %>%
           e_z_axis_3d(
             name = paste0("PC3 - ", pca_var_perc[3], " %"),
             nameLocation = "center",
+            axisLabel = list(fontSize = self$plot_font_size),
             nameTextStyle = list(
               fontWeight = "bold",
-              fontSize = 15,
+              fontSize = self$plot_font_size,
               lineHeight = 50
             )
           ) %>%
@@ -1187,8 +1214,19 @@ QProMS <- R6Class(
       p <- mat %>% 
         e_charts(renderer = self$plot_format) %>%
         e_correlations(order = "hclust", visual_map = FALSE) %>%
-        e_x_axis(axisLabel = list(interval = 0, rotate = 45)) %>%
-        e_y_axis(axisLabel = list(interval = 0, rotate = 0), position = "right") %>%
+        e_x_axis(axisLabel = list(
+          interval = 0,
+          rotate = 45,
+          fontSize = self$plot_font_size
+        )) %>%
+        e_y_axis(
+          axisLabel = list(
+            interval = 0,
+            rotate = 0,
+            fontSize = self$plot_font_size
+          ),
+          position = "right"
+        ) %>% 
         e_tooltip(trigger = "item", formatter = JS("
           function(params){
           return('X: ' + params.value[0] + '<br />Y: ' + params.value[1] + '<br />Value: ' + params.value[2])
@@ -1198,7 +1236,8 @@ QProMS <- R6Class(
           max = 1,
           bottom = 150,
           precision = 2,
-          inRange = list(color = color)
+          inRange = list(color = color),
+          textStyle = list(fontSize = self$plot_font_size)
         ) %>%
         e_grid(containLabel = TRUE) %>%
         e_show_loading(text = "Loading...", color = "#0d6efd") %>% 
@@ -1242,23 +1281,29 @@ QProMS <- R6Class(
         e_y_axis(
           name = x,
           nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
             fontWeight = "bold",
-            fontSize = 16,
-            lineHeight = 60
+            fontSize = self$plot_font_size,
+            lineHeight = 6 * self$plot_font_size
           )
         ) %>%
         e_x_axis(
           name = y,
           nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
             fontWeight = "bold",
-            fontSize = 14,
-            lineHeight = 60
+            fontSize = self$plot_font_size,
+            lineHeight = 4 * self$plot_font_size
           )
         ) %>%
         e_grid(containLabel = TRUE) %>%
-        e_title(paste0("correlation: ", value), left = "center") %>%  
+        e_title(
+          paste0("correlation: ", value),
+          left = "center",
+          textStyle = list(fontSize = self$plot_font_size)
+        ) %>%  
         e_toolbox_feature(feature = "saveAsImage")
       
       if (highlights_names != "") {
@@ -1332,22 +1377,28 @@ QProMS <- R6Class(
         e_y_axis(
           name = "log2 Intensity",
           nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
             fontWeight = "bold",
-            fontSize = 16,
-            lineHeight = 60
+            fontSize = self$plot_font_size,
+            lineHeight = 6 * self$plot_font_size
           )
         ) %>%
         e_x_axis(
           name = "Protein Rank",
           nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
             fontWeight = "bold",
-            fontSize = 14,
-            lineHeight = 60
+            fontSize = self$plot_font_size,
+            lineHeight = 4 * self$plot_font_size
           )
         ) %>%
-        e_title(self$protein_rank_target, left = "center") %>%
+        e_title(
+          self$protein_rank_target,
+          left = "center",
+          textStyle = list(fontSize = self$plot_font_size)
+        ) %>% 
         e_grid(containLabel = TRUE)
       
       if (!is.null(highlights_names)) {
@@ -1560,8 +1611,26 @@ QProMS <- R6Class(
         e_data(right_line, fold_change) %>%
         e_line(p_val, legend = FALSE, color = "#000", symbol = "none", lineStyle = list(type = "dashed", width = .8)) %>%
         e_toolbox_feature(feature = c("saveAsImage", "dataZoom")) %>%
-        e_x_axis(name = "Difference (fold change)", nameLocation = "center", nameTextStyle = list(fontWeight = "bold", fontSize = 15, lineHeight = 50)) %>%
-        e_y_axis(name = "-log10 p-value", nameLocation = "center", nameTextStyle = list(fontWeight = "bold", fontSize = 15, lineHeight = 50)) %>%
+        e_x_axis(
+          name = "Difference (fold change)",
+          nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
+          nameTextStyle = list(
+            fontWeight = "bold",
+            fontSize = self$plot_font_size,
+            lineHeight = 4 * self$plot_font_size
+          )
+        ) %>%
+        e_y_axis(
+          name = "-log10 p-value",
+          nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
+          nameTextStyle = list(
+            fontWeight = "bold",
+            fontSize = self$plot_font_size,
+            lineHeight = 6 * self$plot_font_size
+          )
+        ) %>% 
         e_grid(containLabel = TRUE) %>%
         e_group("grp") %>%
         e_show_loading(text = "Loading...", color = "#0d6efd")
@@ -1647,19 +1716,21 @@ QProMS <- R6Class(
           outliers = FALSE,
           itemStyle = list(borderWidth = 2)
         ) %>%
+        e_legend(textStyle = list(fontSize = self$plot_font_size)) %>%
         e_y_axis(
           name = "log2 Intensity",
           nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
             fontWeight = "bold",
-            fontSize = 16,
-            lineHeight = 60
+            fontSize = self$plot_font_size,
+            lineHeight = 6 * self$plot_font_size
           )
         ) %>% 
         e_x_axis(
           axisLabel = list(
             fontWeight = "bold",
-            fontSize = 16
+            fontSize = self$plot_font_size
           )) %>% 
         e_grid(containLabel = TRUE) %>%
         e_color(self$color_palette) %>%
@@ -1803,6 +1874,8 @@ QProMS <- R6Class(
         column_text_angle = 45,
         plot_method = "plotly",
         showticklabels = c(TRUE, FALSE),
+        fontsize_row = self$plot_font_size,
+        fontsize_col = self$plot_font_size,
         col_side_colors = col_side_colors,
         col_side_palette = col_side_palette,
         label_names = c("Gene", "Sample", mat_name),
@@ -1855,14 +1928,23 @@ QProMS <- R6Class(
         e_charts(label, renderer = self$plot_format) %>%
         e_line(intensity, bind = gene_names) %>%
         e_color(sub_alpha_cols) %>%
-        e_x_axis(name = "", axisLabel = list(interval = 0, rotate = 45)) %>%
+        e_legend(textStyle = list(fontSize = self$plot_font_size)) %>%
+        e_x_axis(
+          name = "",
+          axisLabel = list(
+            interval = 0,
+            rotate = 45,
+            fontSize = self$plot_font_size
+          )
+        ) %>% 
         e_y_axis(
           name = "log2 Intensity",
           nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
             fontWeight = "bold",
-            fontSize = 16,
-            lineHeight = 60
+            fontSize = self$plot_font_size,
+            lineHeight = 6 * self$plot_font_size
           )
         ) %>%
         e_grid(containLabel = TRUE) %>%
@@ -1904,15 +1986,24 @@ QProMS <- R6Class(
                 itemStyle = list(borderWidth = 0),
                 name = "95% CI") %>%
         e_color(clust_color) %>%
-        e_x_axis(name = "", axisLabel = list(interval = 0, rotate = 45)) %>%
+        e_legend(textStyle = list(fontSize = self$plot_font_size)) %>%
+        e_x_axis(
+          name = "",
+          axisLabel = list(
+            interval = 0,
+            rotate = 45,
+            fontSize = self$plot_font_size
+          )
+        ) %>% 
         e_grid(containLabel = TRUE) %>%
         e_y_axis(
           name = "log2 Intensity",
           nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
             fontWeight = "bold",
-            fontSize = 16,
-            lineHeight = 60
+            fontSize = self$plot_font_size,
+            lineHeight = 6 * self$plot_font_size
           )
         ) %>%
         e_toolbox_feature(feature = c("saveAsImage", "restore", "dataZoom")) %>% 
@@ -2145,7 +2236,7 @@ QProMS <- R6Class(
       
       if (show_names) {
         p <- p %>%
-          e_labels(fontSize = 10)
+          e_labels(fontSize = self$plot_font_size)
       }
       
       p$x$opts$series[[1]]$links <- map2(p$x$opts$series[[1]]$links, edges$color, ~ modifyList(.x, list(lineStyle = list(color = .y))))
@@ -2344,10 +2435,11 @@ QProMS <- R6Class(
         e_x_axis(
           name = arrange,
           nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
             fontWeight = "bold",
-            fontSize = 16,
-            lineHeight = 60
+            fontSize = self$plot_font_size,
+            lineHeight = 4 * self$plot_font_size
           )
         ) %>% 
         e_y_axis(axisLabel = list(fontSize = 0)) %>%
@@ -2512,10 +2604,11 @@ QProMS <- R6Class(
         e_x_axis(
           name = arrange,
           nameLocation = "center",
+          axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
             fontWeight = "bold",
-            fontSize = 16,
-            lineHeight = 60
+            fontSize = self$plot_font_size,
+            lineHeight = 4 * self$plot_font_size
           )
         ) %>% 
         e_y_axis(axisLabel = list(fontSize = 0)) %>%

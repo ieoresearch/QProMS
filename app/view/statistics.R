@@ -59,7 +59,7 @@ ui <- function(id) {
             inputId = ns("test_input"),
             label = "Test type",
             choices = c(
-              "Welch's T-test" = "welch",
+              "Welch's T-test (Default)" = "welch",
               "Student's T-test" = "student",
               "limma"
               # "Wilcoxon test" = "wilcox" # remove beacuse not work properly.
@@ -94,7 +94,7 @@ ui <- function(id) {
             inputId = ns("truncation_input"),
             label = "Truncation",
             choices = c(
-              "Benjamini & Hochberg" = "BH",
+              "BH (Default)" = "BH",
               "Bonferroni" = "bonferroni",
               "Holm (1979)" = "holm",
               "Hochberg (1988)" = "hochberg",

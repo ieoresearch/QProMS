@@ -26,7 +26,7 @@ ui <- function(id) {
         card_header(h4(class = "text-center", "Settings")),
         card_body(
           layout_columns(
-            col_widths = c(-2, 8, -2, -2, 6, 2, -2, 12, -4, 2, 2, -4),
+            col_widths = c(-2, 8, -2, -2, 6, 2, -2, 12, -4, 4, -4),
             gap = "2rem",
             row_heights = c(1, 1, 1, 1),
             palettePicker(
@@ -39,8 +39,8 @@ ui <- function(id) {
               inputId = ns("text_sixe"),
               label = "Plots text size",
               min = 4,
-              max = 24,
-              value = 12,
+              max = 36,
+              value = 16,
               step = 1,
               width = "100%"
             ),
@@ -55,11 +55,6 @@ ui <- function(id) {
               inputId = ns("update"),
               label = "UPDATE",
               class = "bg-primary",
-              width = "100%"
-            ),
-            actionButton(
-              inputId = ns("update"),
-              label = "Reset",
               width = "100%"
             )
           )
@@ -77,6 +72,7 @@ server <- function(id, r6) {
     observeEvent(input$update, {
       r6$plot_format <- input$plot_format
       r6$palette <- input$palette
+      r6$plot_font_size <- input$text_sixe
       if(!is.null(r6$expdesign)) {
         r6$define_colors()
         trigger("plot")

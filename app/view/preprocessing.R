@@ -93,6 +93,7 @@ ui <- function(id) {
         accordion_panel(
           title = "Subset by Peptides",
           id = ns("peptides"),
+          # value = "test",
           selectInput(
             inputId = ns("peptides_input"),
             label = tooltip(
@@ -205,6 +206,16 @@ ui <- function(id) {
 #' @export
 server <- function(id, r6) {
   moduleServer(id, function(input, output, session) {
+    
+    observe({
+      watch("genes")
+      if(!is.null(r6$input_type)) {
+        if(r6$input_type != "MaxQuant") {
+          accordion_panel_remove("accordion", "Subset by Peptides", session = session)
+          accordion_panel_remove("accordion", "Remove Contaminants", session = session)
+        }
+      }
+    })
     
     observeEvent(input$update, {
 
