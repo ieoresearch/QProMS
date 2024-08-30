@@ -88,3 +88,30 @@
 [2024-06-18 15:13:34] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
 [2024-06-18 15:13:34] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
 [2024-06-18 15:13:34] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-18 19:18:34] [TRACE]   [OmnipathR] Removing database `Ensembl and OMA organism names` (not used in the past 10800 seconds)
+[2024-06-19 10:14:26] [INFO]    [OmnipathR] Loading database `Ensembl and OMA organism names`.
+[2024-06-19 10:14:26] [INFO]    [OmnipathR] Looking up in cache `https://www.ensembl.org/info/about/species.html`: key=7332486db7400730697234bad76ca0c8e4d00799, latest version=1.
+[2024-06-19 10:14:26] [TRACE]   [OmnipathR] Cache file path: /Users/bedin.fabio/Library/Caches/OmnipathR/7332486db7400730697234bad76ca0c8e4d00799-1.html
+[2024-06-19 10:14:26] [TRACE]   [OmnipathR] Looking up in cache: `https://omabrowser.org/All/oma-species.txt`.
+[2024-06-19 10:14:26] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/30e690cbb55dfc63b5903ab337f34ffc2f4be397-1.rds`.
+[2024-06-19 10:14:26] [INFO]    [OmnipathR] Loaded database `Ensembl and OMA organism names`.
+[2024-06-19 10:14:26] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-19 10:14:26] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-19 10:14:26] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-19 10:14:26] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-19 10:14:26] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-19 10:14:26] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-19 13:15:43] [TRACE]   [OmnipathR] Removing database `Ensembl and OMA organism names` (not used in the past 10800 seconds)
+[2024-06-19 14:14:13] [INFO]    [OmnipathR] Loading database `Ensembl and OMA organism names`.
+[2024-06-19 14:14:13] [INFO]    [OmnipathR] Looking up in cache `https://www.ensembl.org/info/about/species.html`: key=7332486db7400730697234bad76ca0c8e4d00799, latest version=1.
+[2024-06-19 14:14:13] [TRACE]   [OmnipathR] Cache file path: /Users/bedin.fabio/Library/Caches/OmnipathR/7332486db7400730697234bad76ca0c8e4d00799-1.html
+[2024-06-19 14:14:13] [TRACE]   [OmnipathR] Looking up in cache: `https://omabrowser.org/All/oma-species.txt`.
+[2024-06-19 14:14:13] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/30e690cbb55dfc63b5903ab337f34ffc2f4be397-1.rds`.
+[2024-06-19 14:14:13] [INFO]    [OmnipathR] Loaded database `Ensembl and OMA organism names`.
+[2024-06-19 14:14:13] [TRACE]   [OmnipathR] Reading JSON from `https://omnipathdb.org/resources` (encoding: UTF-8).
+[2024-06-19 14:14:13] [TRACE]   [OmnipathR] JSON validation successful: TRUE
+[2024-06-19 14:14:13] [TRACE]   [OmnipathR] Looking up in cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-19 14:14:13] [TRACE]   [OmnipathR] Loaded data from RDS `/Users/bedin.fabio/Library/Caches/OmnipathR/a936d047aec5e3fcc61b42b75f13587cc2b40099-1.rds`.
+[2024-06-19 14:14:13] [INFO]    [OmnipathR] Loaded from cache: `https://omnipathdb.org/complexes?resources=CORUM&license=academic`
+[2024-06-19 14:14:13] [SUCCESS] [OmnipathR] Loaded 2734 protein complexes from cache.
+[2024-06-19 17:16:10] [TRACE]   [OmnipathR] Removing database `Ensembl and OMA organism names` (not used in the past 10800 seconds)

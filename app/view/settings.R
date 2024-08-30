@@ -1,11 +1,12 @@
 box::use(
-  shiny[moduleServer, NS, radioButtons, actionButton, hr, h3, h4, br, div, observeEvent, req, sliderInput],
+  shiny[moduleServer, NS, radioButtons, actionButton, hr, h3, h4, br, div, observeEvent, req, sliderInput, strong],
   bslib[page_fillable, layout_columns, card, card_header, card_body, accordion, accordion_panel, accordion_panel_close, accordion_panel_open, nav_select, tooltip],
   esquisse[palettePicker],
   viridis[viridis],
   purrr[map, set_names],
   dplyr[`%>%`, filter, select],
   gargoyle[init, watch, trigger],
+  shinyalert[shinyalert],
 )
 
 ## metterli dentro uno script utility functions
@@ -77,6 +78,16 @@ server <- function(id, r6) {
         r6$define_colors()
         trigger("plot")
       }
+      shinyalert(
+        title = "Setting Updated!",
+        text = "",
+        size = "s",
+        closeOnClickOutside = TRUE,
+        type = "success",
+        showConfirmButton = FALSE,
+        timer = 1500
+      )
+      
     })
 
   })
