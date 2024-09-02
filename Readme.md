@@ -166,7 +166,7 @@ This page performs over-representation analysis with Gene Ontology (GO) terms. I
 
 If multiple comparisons are carried out, one may select multiple contrasts to generate multiple plots.
 
-In "parameters", the user may define the "simplify threshold", the user may select how much grouping of GO terms is performed. At high values, for example, "40S ribosome", "80S ribosome" may be grouped into "ribosome" or even "translation". 
+In "parameters", the user may define the "simplify threshold", the user may select how much grouping of GO terms is performed. At low values, for example, "40S ribosome", "80S ribosome" may be grouped into "ribosome" or even "translation". 
 
 If "Bacgkground" is disabled (default), ORA is performed against the organsim's whole proteome. Enabling it will perform ORA against the entire list of proteins identified in the upload.
 
