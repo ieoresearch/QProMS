@@ -7,7 +7,7 @@ QProMS is a shiny app that enables easy but powerful and reproducible analyses f
 
 ### Installation or running online
 
-Open the app [here](https://bioserver.ieo.it/shiny/app/qproms). The app can also be run locally. Open Rstudio (make sure you have RTools installed along with R>4.0) and open this project from a local download or by loading it from version control. Then type:
+Open the app [here](https://bioserver.ieo.it/shiny/app/qproms). The app can also be run locally. Open Rstudio (make sure you have RTools installed along with R>4.3) and open this project from a local download or by loading it from version control. Then type:
 
 
     renv::restore(rebuild=TRUE)
