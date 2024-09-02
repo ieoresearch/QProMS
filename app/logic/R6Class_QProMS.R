@@ -788,7 +788,7 @@ QProMS <- R6Class(
         e_color(self$color_palette) %>%
         e_legend(textStyle = list(fontSize = self$plot_font_size)) %>%
         e_y_axis(
-          name = "Counts",
+          name = "protein counts",
           nameLocation = "center",
           axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
@@ -904,7 +904,7 @@ QProMS <- R6Class(
         e_tooltip(trigger = "axis") %>% 
         e_legend(show = FALSE) %>%
         e_y_axis(
-          name = "Density",
+          name = "Coefficient of variation",
           nameLocation = "center",
           axisLabel = list(fontSize = self$plot_font_size),
           nameTextStyle = list(
