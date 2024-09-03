@@ -36,7 +36,7 @@ ui <- function(id) {
     ),
     nav_spacer(),
     nav_panel(title = "Home", home$ui(ns("home"))),
-    nav_panel(title = "Desing", upload$ui(ns("upload"))),
+    nav_panel(title = "Design", upload$ui(ns("upload"))),
     nav_panel(title = "Preprocessing", preprocessing$ui(ns("preprocessing"))),
     nav_panel(title = "PCA", pca$ui(ns("pca"))),
     nav_panel(title = "Correlation", correlation$ui(ns("correlation"))),
