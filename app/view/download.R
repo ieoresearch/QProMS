@@ -1,5 +1,5 @@
 box::use(
-  shiny[moduleServer, NS, radioButtons, selectInput, actionButton, hr, h3, h4, br, div, observeEvent, req, sliderInput, checkboxGroupInput],
+  shiny[moduleServer, observe, downloadButton, updateSelectInput, downloadHandler, NS, conditionalPanel, radioButtons, selectInput, actionButton, hr, h3, h4, br, div, observeEvent, req, sliderInput, checkboxGroupInput],
   bslib[page_fillable, layout_columns, card, card_header, card_body, accordion, accordion_panel, nav_select, tooltip],
   gargoyle[init, watch, trigger],
 )
@@ -25,22 +25,34 @@ ui <- function(id) {
                 selectInput(
                   inputId = ns("select_table"),
                   label = "Select Table",
-                  choices = c("Filtred", "Normalized", "Imputed", "Volcanos", "Heatmap", "Nodes", "Edges", "ORA", "GSEA"),
+                  choices = c("Filtred", "Normalized", "Imputed", "Ranked", "Volcanos", "Heatmap", "Nodes", "Edges", "ORA", "GSEA"),
                   selected = "Filtred",
                   width = "100%"
                 ),
                 selectInput(
-                  inputId = ns("select_table"),
-                  label = "Add Metadata Columns",
-                  choices = NULL,
-                  width = "100%",
-                  multiple = TRUE
+                  inputId = ns("table_extension"),
+                  label = "File extension ",
+                  choices = c(".xlsx", ".csv", ".tsv"),
+                  selected = ".xlsx",
+                  width = "100%"
                 ),
-                actionButton(
-                  inputId = ns("download_table"),
+                conditionalPanel(
+                  condition = "input.select_table == 'Filtred' || input.select_table == 'Normalized' || input.select_table == 'Imputed' || input.select_table == 'Volcanos' || input.select_table == 'Heatmap'",
+                  ns = ns,
+                  selectInput(
+                    inputId = ns("add_metadata"),
+                    label = "Add Metadata Columns",
+                    choices = NULL,
+                    width = "100%",
+                    multiple = TRUE
+                  )
+                ),
+                downloadButton(
+                  outputId = ns("download_table"),
                   label = "DOWNLOAD",
                   width = "100%",
-                  class = "bg-primary mt-auto"
+                  class = "bg-primary mt-auto",
+                  icon = NULL
                 )
               )
             ),
@@ -48,7 +60,7 @@ ui <- function(id) {
               title = "Define & Download Report",
               id = ns("report"),
               layout_columns(
-                col_widths = c(8, 4),
+                col_widths = c(9, 3),
                 checkboxGroupInput(
                   inputId = ns("report_section"),
                   label = "Report Section",
@@ -56,11 +68,12 @@ ui <- function(id) {
                   inline = TRUE,
                   selected = c("Prepocessing", "PCA", "Correlation", "Rank", "Volcano", "Heatmap", "Network", "ORA", "GSEA")
                 ),
-                actionButton(
-                  inputId = ns("download_report"),
+                downloadButton(
+                  outputId = ns("download_report"),
                   label = "DOWNLOAD",
                   width = "100%",
-                  class = "bg-primary mt-auto"
+                  class = "bg-primary mt-auto",
+                  icon = NULL
                 )
               )
             ),
@@ -68,18 +81,19 @@ ui <- function(id) {
               title = "Download Parameters",
               id = ns("parmas"),
               layout_columns(
-                col_widths = c(8, 4),
+                col_widths = c(9, 3),
                 div(
                   class = "alert alert-success",
                   style = "white-space: pre-wrap;",
                   role = "alert",
                   "All parameters used during the analysis will be stored in the QProMS_parameters.yaml file."
                 ),
-                actionButton(
-                  inputId = ns("download_params"),
+                downloadButton(
+                  outputId = ns("download_params"),
                   label = "DOWNLOAD",
                   width = "100%",
-                  class = "bg-primary"
+                  class = "bg-primary mt-1",
+                  icon = NULL
                 )
               )
             )
@@ -95,6 +109,26 @@ ui <- function(id) {
 server <- function(id, r6) {
   moduleServer(id, function(input, output, session) {
     
+    observe({
+      watch("genes")
+      updateSelectInput(inputId = "add_metadata", choices = colnames(r6$raw_data_unique), selected = NULL)
+    })
+    
+    output$download_table <- downloadHandler(
+      filename = function() {
+        paste0(input$select_table, "_table_", Sys.Date(), input$table_extension)
+      },
+      content = function(file) {
+       
+        r6$download_table(
+          handler_file = file,
+          table_type = input$select_table,
+          table_extension = input$table_extension,
+          extra_columns = input$add_metadata
+        )
+       
+      }
+    )
     
   })
 }

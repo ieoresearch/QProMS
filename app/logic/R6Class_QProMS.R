@@ -1,7 +1,7 @@
 box::use(
   R6[R6Class],
   data.table[fread],
-  utils[head, combn, modifyList],
+  utils[head, combn, modifyList, write.csv, write.table],
   dplyr[`%>%`, n_distinct, group_by, summarise, n, filter, mutate, ungroup, row_number, select, across, where, all_of, na_if, left_join, rename, if_else, case_when, full_join, relocate, inner_join, distinct, count, everything, pull, arrange, slice_head, slice_tail, last_col, rename_with, ends_with, desc, rename_at, vars, bind_rows, group_map, rowwise, if_all, group_keys, sym, slice_max],
   tidyr[drop_na, pivot_longer, pivot_wider, expand_grid, unite, separate_rows, unnest_wider, nest, separate],
   purrr[map, map2, set_names, imap, keep_at, flatten_chr, reduce, map_chr, map_dbl, possibly, list_rbind, pluck, compact, flatten],
@@ -22,6 +22,7 @@ box::use(
   trelliscope[panel_lazy, as_trelliscope_df, set_default_layout, add_trelliscope_resource_path],
   heatmaply[heatmaply],
   plotly[plotly_empty, config, layout],
+  openxlsx[createStyle, createWorkbook, addWorksheet, writeDataTable, setColWidths, addStyle, saveWorkbook],
   echarts4r[e_charts, e_bar, e_x_axis, e_y_axis, e_tooltip, e_legend, e_grid, e_color, e_toolbox_feature, e_show_loading, e_boxplot, e_histogram, e_data, e_scatter, e_scatter_3d, e_x_axis_3d, e_y_axis_3d, e_z_axis_3d, e_correlations, e_visual_map, e_title, e_mark_point, e_add_nested, e_group, e_line, e_band2, e_graph, e_graph_nodes, e_graph_edges, e_labels, e_draft, e_flip_coords]
 )
 
@@ -37,6 +38,7 @@ QProMS <- R6Class(
     ####################
     # Input parameters #
     raw_data = NULL,
+    raw_data_unique = NULL,
     identify_table_status = NULL,
     parameters_loaded = FALSE,
     input_file_name = NULL,
@@ -463,14 +465,16 @@ QProMS <- R6Class(
           mutate(!!protein_col := str_extract(.data[[protein_col]], "[^;]*")) %>% 
           mutate(!!gene_col := self$make_unique_genes(.data[[gene_col]], .data[[protein_col]]))
       }
-      
+      self$raw_data_unique <- initial_table %>% 
+        rename(gene_names := !!gene_col)
       # Trasformare la tabella in formato long
       data <- initial_table %>%
         select(all_of(c(required_columns, intensity_cols))) %>% 
         pivot_longer(cols = all_of(intensity_cols), names_to = "key", values_to = "intensity") %>% 
         left_join(self$expdesign, by = "key") %>% 
         rename(gene_names := !!gene_col) %>% 
-        mutate(bin_intensity = if_else(is.na(intensity), 0, 1))
+        mutate(bin_intensity = if_else(is.na(intensity), 0, 1)) %>% 
+        mutate(imputed = FALSE)
       
       self$data <- data
     },
@@ -1035,14 +1039,17 @@ QProMS <- R6Class(
       table <- data %>% 
         select(gene_names, label, intensity) %>% 
         mutate(intensity = round(intensity, 2)) %>% 
-        pivot_wider(id_cols = gene_names, names_from = label, values_from = intensity)
+        pivot_wider(id_cols = gene_names, names_from = label, values_from = intensity) 
       
-      if (self$is_imp) {
+      if (any(data$imputed)) {
         imp_information <- data %>%
           group_by(gene_names) %>%
           summarise(imputed = any(imputed), .groups = "drop")
         table <- table %>% 
           left_join(imp_information, by = "gene_names")
+      } else {
+        table <- table %>% 
+          mutate(imputed = FALSE)
       }
       
       if (!df) {
@@ -2638,6 +2645,54 @@ QProMS <- R6Class(
         set_default_layout(ncol = 1)
       
       return(p)
+    },
+    download_excel = function(table, name, handler) {
+      header_style <- createStyle(
+        fontSize = 12,
+        fontColour = "#0f0f0f",
+        fgFill = "#faf2ca",
+        halign = "center",
+        border = "TopBottomLeftRight")
+      body_style <- createStyle(
+        halign = "center",
+        border = "TopBottomLeftRight")
+      excel <- createWorkbook()
+      addWorksheet(excel, sheetName = name, gridLines = F)
+      writeDataTable(excel, sheet = name, x = table, keepNA = T, na.string = "NaN")
+      n_row <- table %>% nrow() + 1
+      n_col <- table %>% ncol()
+      setColWidths(excel, sheet = name, cols = 1:n_col, widths = 21)
+      addStyle(excel, sheet = name, style = header_style, rows = 1, cols = 1:n_col, gridExpand = T)
+      addStyle(excel, sheet = name, style = body_style, rows = 2:n_row, cols = 1:n_col, gridExpand = T)
+      saveWorkbook(excel, handler, overwrite = T)
+    },
+    download_table = function(handler_file, table_type, table_extension, extra_columns) {
+      table <- switch(
+        table_type,
+        "Filtred" = self$print_table(self$filtered_data, df = TRUE),
+        "Normalized" = self$print_table(self$normalized_data, df = TRUE),
+        "Imputed" = self$print_table(self$imputed_data, df = TRUE),
+        "Ranked" = self$print_rank_table(),
+        "Volcanos" = self$print_stat_table(),
+        "Heatmap" = self$print_anova_table(),
+        "Nodes" = self$print_nodes(isolate_nodes = FALSE, score_thr = 0),
+        "Edges" = self$print_edges(selected_nodes = NULL, score_thr = 0),
+        "ORA" = self$ora_table,
+        "GSEA" = self$gsea_table
+      )
+      if(is.null(table)) {return(NULL)}
+      if(table_type %in% c("Nodes", "Edges", "ORA", "GSEA")) {extra_columns <- NULL}
+      if(!is.null(extra_columns)) {
+        extra <- self$raw_data_unique %>% 
+          select(gene_names, all_of(extra_columns))
+        table <- left_join(table, extra, by = "gene_names")
+      }
+      switch(
+        table_extension,
+        ".xlsx" = self$download_excel(table, table_type, handler_file),
+        ".csv" = write.csv(table, handler_file),
+        ".tsv" = write.table(table, handler_file, sep = "\t", row.names = FALSE, quote = FALSE)
+      )
     }
   )
 )

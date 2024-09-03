@@ -10,7 +10,9 @@ library(org.Hs.eg.db)
 library(clusterProfiler)
 
 box::use(app/logic/R6Class_QProMS)
+box::reload(R6Class_QProMS)
 box::use(app/static/inputs_type_lists)
+box::use(app/static/contaminants)
 
 r6 <- R6Class_QProMS$QProMS$new()
 # r6$loading_data(input_path = "app/static/proteinGroups.txt", input_name = "test")
@@ -29,17 +31,6 @@ a <- tibble(
     "nonXL_3 MaxLFQ Intensity"
   )
 )
-# a <- tibble(
-#   "condition" = c("gel", "gel", "gel", "ist", "ist", "ist"),
-#   "key" = c(
-#     "LFQ intensity GEL_25kDa",
-#     "LFQ intensity GEL_50kDa",
-#     "LFQ intensity GEL_75kDa",
-#     "LFQ intensity iST_50kDa_01_200ng",
-#     "LFQ intensity iST_50kDa_02_200ng",
-#     "LFQ intensity iST_50kDa_03_200ng"
-#   )
-# )
 r6$validate_expdesign(a)
 r6$add_replicate_and_label(a)
 r6$preprocessing()
@@ -58,11 +49,4 @@ r6$organism <- "human"
 r6$make_edges("string")
 r6$plot_heatmap(order_by_expdesing = FALSE)
 
-a <- r6$imputed_data %>% 
-  group_by(gene_names) %>%
-  summarise(imputed = any(imputed), .groups = "drop") 
 
-b <- r6$imputed_data %>% 
-  pivot_wider(id_cols = "gene_names", names_from = "label", values_from = "intensity")
-
-left_join(b, a, by = "gene_names")
