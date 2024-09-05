@@ -83,16 +83,16 @@ ui <- function(id) {
               layout_columns(
                 col_widths = c(9, 3),
                 div(
-                  class = "alert alert-success",
+                  class = "alert alert-info",
                   style = "white-space: pre-wrap;",
                   role = "alert",
-                  "All parameters used during the analysis will be stored in the QProMS_parameters.yaml file."
+                  "All the date generated during the analysis will be stored in this QProMS_analysis.rds file. You can reload this file to maintain reproducibility or to continue a previous analysis."
                 ),
                 downloadButton(
                   outputId = ns("download_params"),
                   label = "DOWNLOAD",
                   width = "100%",
-                  class = "bg-primary mt-1",
+                  class = "bg-primary",
                   icon = NULL
                 )
               )
@@ -127,6 +127,15 @@ server <- function(id, r6) {
           extra_columns = input$add_metadata
         )
        
+      }
+    )
+    
+    output$download_params <- downloadHandler(
+      filename = function() {
+        paste0("QProMS_analysis_", Sys.Date(), ".rds")
+      },
+      content = function(file) {
+        r6$download_parameters(handler_file = file, r6class = r6)
       }
     )
     

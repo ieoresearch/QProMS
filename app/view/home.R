@@ -1,7 +1,8 @@
 box::use(
   shiny[moduleServer, NS, div, p, h1, h4, HTML, fileInput, textInput, req, tagList, passwordInput, updateSelectInput, selectInput, actionButton, observeEvent, isolate, br, observe, updateActionButton, uiOutput, renderUI, icon],
   bslib[page_fillable, layout_columns, card, accordion, accordion_panel, accordion_panel_close, accordion_panel_open, nav_select, tooltip, input_task_button],
-  gargoyle[init, watch, trigger]
+  gargoyle[init, watch, trigger],
+  shinyalert[shinyalert],
 )
 
 #' @export
@@ -41,20 +42,20 @@ ui <- function(id) {
             )
           ),
           accordion_panel(
-            title = "Upload Parameters",
+            title = "Upload Saved Analysis",
             id = ns("params"),
             fileInput(
               inputId = ns("upload_params"),
               label = tooltip(
                 trigger = list(
-                  "Parameters",
+                  "Saved Analysis",
                   icon("info-circle")
                 ),
-                "Upload a QProMS parameters yaml for reproducibility. Is not necessary for new analysis."
+                "Upload a QProMS_analysis.rds file for reproducibility or to continue a previous analysis. Is not necessary for new analysis."
               ),
               multiple = FALSE,
-              placeholder = "QProMS_parameters.yaml",
-              accept = ".yaml",
+              placeholder = "QProMS_analysis.rds",
+              accept = ".rds",
               width = "100%"
             ),
             br(),
@@ -99,23 +100,40 @@ server <- function(id, r6, main_session) {
     init("expdesig")
     
     observeEvent(input$confirm, {
+      if(is.null(input$upload_file)) {
+        shinyalert(
+          title = "Missing Dataset!",
+          text = "Before pressing START you MUST upload a dataset.",
+          size = "m",
+          closeOnClickOutside = TRUE,
+          type = "info",
+          showConfirmButton = FALSE,
+          timer = 3500
+        )
+      }
       req(input$upload_file)
       ## Load the data
-      r6$loading_data(
-        input_path = input$upload_file$datapath,
-        input_name = input$upload_file$name
-      )
+      r6$loading_data(input_path = input$upload_file$datapath)
       trigger("expdesig")
-      nav_select("top_navigation", "Desing", session = main_session)
+      nav_select("top_navigation", "Design", session = main_session)
     })
     
     observeEvent(input$start_with_params, {
-      req(input$upload_file)
-      
+      if(is.null(input$upload_params)) {
+        shinyalert(
+          title = "Missing QProMS_parameters.yaml file!",
+          text = "Before pressing START you MUST upload a params file.",
+          size = "m",
+          closeOnClickOutside = TRUE,
+          type = "info",
+          showConfirmButton = FALSE,
+          timer = 3500
+        )
+      }
+      req(input$upload_params)
       if(!is.null(input$upload_params)) {
-        r6$loading_patameters(input_path = input$upload_params$datapath)
-        r6$preprocessing()
-        r6$shiny_wrap_workflow()
+        r6$loading_parameters(input_path = input$upload_params$datapath, r6)
+        trigger("plot", "genes")
         nav_select("top_navigation", "Preprocessing", session = main_session)
       }
     })

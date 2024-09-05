@@ -22,6 +22,7 @@ box::use(
   trelliscope[panel_lazy, as_trelliscope_df, set_default_layout, add_trelliscope_resource_path],
   heatmaply[heatmaply],
   plotly[plotly_empty, config, layout],
+  rlist[list.save, list.load],
   openxlsx[createStyle, createWorkbook, addWorksheet, writeDataTable, setColWidths, addStyle, saveWorkbook],
   echarts4r[e_charts, e_bar, e_x_axis, e_y_axis, e_tooltip, e_legend, e_grid, e_color, e_toolbox_feature, e_show_loading, e_boxplot, e_histogram, e_data, e_scatter, e_scatter_3d, e_x_axis_3d, e_y_axis_3d, e_z_axis_3d, e_correlations, e_visual_map, e_title, e_mark_point, e_add_nested, e_group, e_line, e_band2, e_graph, e_graph_nodes, e_graph_edges, e_labels, e_draft, e_flip_coords]
 )
@@ -40,9 +41,6 @@ QProMS <- R6Class(
     raw_data = NULL,
     raw_data_unique = NULL,
     identify_table_status = NULL,
-    parameters_loaded = FALSE,
-    input_file_name = NULL,
-    path = NULL,
     data = NULL,
     input_type = NULL,
     intensity_type = NULL,
@@ -151,55 +149,12 @@ QProMS <- R6Class(
     ###########
     # Methods #
     loading_data = function(input_path, input_name) {
-      
       self$raw_data <- fread(input = input_path) 
-      
-      self$path <- input_path
-      
-      self$input_file_name <- input_name
     },
-    loading_patameters = function(input_path) {
-      
-      parameters_list <- read_yaml(file = input_path)
-      
-      self$expdesign <- as_tibble(parameters_list$expdesign)
-      self$input_file_name <- parameters_list$input_file_name
-      ## for wrangling data page
-      self$valid_val_filter <- parameters_list$valid_val_filter
-      self$valid_val_thr <- parameters_list$valid_val_thr
-      self$norm_methods <- parameters_list$norm_methods
-      self$pep_filter <- parameters_list$pep_filter
-      self$pep_thr <- parameters_list$pep_thr
-      self$rev <- parameters_list$rev
-      self$cont <- parameters_list$cont
-      self$oibs <- parameters_list$oibs
-      ## for missing data page
-      self$imp_methods <- parameters_list$imp_methods
-      self$imp_shift <- parameters_list$imp_shift
-      self$imp_scale <- parameters_list$imp_scale
-      ## for protein rank page
-      self$protein_rank_target <- parameters_list$protein_rank_target
-      self$protein_rank_by_cond <- parameters_list$protein_rank_by_cond
-      self$protein_rank_selection <- parameters_list$protein_rank_selection
-      self$protein_rank_top_n <- parameters_list$protein_rank_top_n
-      ## for univariate page
-      self$univariate_test_type <- parameters_list$univariate_test_type
-      self$univariate_paired <- parameters_list$univariate_paired
-      self$fold_change <- parameters_list$fold_change
-      self$univariate_alpha <- parameters_list$univariate_alpha
-      self$univariate_p_adj_method <- parameters_list$univariate_p_adj_method
-      ## for multivariate page
-      self$anova_alpha <- parameters_list$anova_alpha
-      self$z_score <- parameters_list$z_score
-      self$anova_p_adj_method <- parameters_list$anova_p_adj_method
-      self$anova_clust_method <- parameters_list$anova_clust_method
-      self$clusters_number <- parameters_list$clusters_number
-      ## for network page
-      self$pdb_database <- parameters_list$pdb_database
-      self$network_score_thr <- parameters_list$network_score_thr
-      
-      self$parameters_loaded <- TRUE
-      
+    loading_parameters = function(input_path, self) {
+      parameters_list <- list.load(input_path)
+      imap(parameters_list, ~ {self[[.y]] <- .x})
+      invisible(self)
     },
     table_raw_data = function() {
       t <- self$raw_data %>% 
@@ -2693,6 +2648,12 @@ QProMS <- R6Class(
         ".csv" = write.csv(table, handler_file),
         ".tsv" = write.table(table, handler_file, sep = "\t", row.names = FALSE, quote = FALSE)
       )
+    },
+    download_parameters = function(handler_file, r6class) {
+      tmp <- sapply(r6class, class)
+      slots <- tmp[!tmp %in% c("environment", "function")]
+      params <- imap(slots, ~ {r6class[[.y]]})
+      list.save(params, handler_file)
     }
   )
 )

@@ -189,7 +189,7 @@ The user may define the level of significance (Alpha) and the FDR correction met
 
 The app can generate an HTML report that may be shared with collaborators. Clicking on the top right download button enables report download or download of individual tables in excel or csv format as well as individual figures.
 
-Finally, the analysis parameters may be downloaded here. The resulting file in .yml format can then be used down the road to reanalyse results and reproduce identical plots by uploading the results table and parameter file to QProMS in the upload page.
+Finally, the entire analysis session may be downloaded here. The resulting file in .rds format can then be used down the road to reopen the session in the upload page.
 
 
 ### Advanced usage- custom contaminants lists
