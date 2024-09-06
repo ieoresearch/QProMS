@@ -1,6 +1,6 @@
 box::use(
-  shiny[moduleServer, NS, actionButton, br, selectInput, icon, div, numericInput, observe, updateSelectInput, observeEvent, req, isolate, reactive],
-  bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, sidebar, tooltip, input_switch, accordion, accordion_panel, input_task_button],
+  shiny[moduleServer, NS, actionButton, br, selectInput, icon, div, numericInput, observe, updateSelectInput, observeEvent, req, reactive, updateNumericInput],
+  bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, sidebar, tooltip, input_switch, accordion, accordion_panel, input_task_button, update_switch],
   gargoyle[watch, trigger, init],
   reactable[reactableOutput, renderReactable, getReactableState],
   trelliscope[trelliscopeOutput, renderTrelliscope],
@@ -134,6 +134,18 @@ server <- function(id, r6) {
       updateSelectInput(inputId = "contrast_input", choices = r6$all_test_combination, selected = r6$all_test_combination[1])
     })
     
+    observe({
+      watch("session")
+      updateSelectInput(inputId = "contrast_input", choices = r6$all_test_combination, selected = r6$contrasts)
+      updateSelectInput(inputId = "test_input", selected = r6$univariate_test_type)
+      updateSelectInput(inputId = "truncation_input", selected = r6$univariate_p_adj_method)
+      update_switch(id = "paider_input", value = r6$univariate_paired)
+      update_switch(id = "same_y_input", value = r6$univariate_same_y)
+      update_switch(id = "same_x_input", value = r6$univariate_same_x)
+      updateNumericInput(inputId = "fc_input", value = r6$fold_change)
+      updateNumericInput(inputId = "alpha_input", value = r6$univariate_alpha)
+    })
+    
     observeEvent(input$update ,{
 
       req(input$contrast_input)
@@ -144,6 +156,8 @@ server <- function(id, r6) {
       r6$univariate_alpha <- as.double(input$alpha_input)
       r6$univariate_p_adj_method <- input$truncation_input
       r6$contrasts <- input$contrast_input
+      r6$univariate_same_x <- input$same_x_input
+      r6$univariate_same_y <- input$same_y_input
       
       r6$stat_uni_test(
         test = r6$contrasts,
@@ -167,8 +181,8 @@ server <- function(id, r6) {
         r6$plot_volcano(
           r6$contrasts,
           highlights,
-          isolate(input$same_x_input),
-          isolate(input$same_y_input)
+          r6$univariate_same_x,
+          r6$univariate_same_y
         )
       }
     })

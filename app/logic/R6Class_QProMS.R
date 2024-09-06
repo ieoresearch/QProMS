@@ -96,6 +96,8 @@ QProMS <- R6Class(
     univariate_alpha = 0.05,
     univariate_p_adj_method = "BH",
     fold_change = 1,
+    univariate_same_y = TRUE,
+    univariate_same_x = FALSE,
     anova_table = NULL,
     anova_matrix = NULL,
     row_den = NULL,

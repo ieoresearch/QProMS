@@ -1,6 +1,6 @@
 box::use(
-  shiny[moduleServer, NS, selectInput, br, sliderInput, actionButton, icon, observe, updateSelectInput, reactive, observeEvent],
-  bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, sidebar, accordion, accordion_panel, input_switch, tooltip],
+  shiny[moduleServer, NS, selectInput, br, sliderInput, actionButton, icon, observe, updateSelectInput, reactive, observeEvent, updateSliderInput],
+  bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, sidebar, accordion, accordion_panel, input_switch, tooltip, update_switch],
   gargoyle[watch, trigger],
   echarts4r[echarts4rOutput, renderEcharts4r],
   reactable[reactableOutput, renderReactable, getReactableState],
@@ -84,6 +84,14 @@ ui <- function(id) {
 #' @export
 server <- function(id, r6) {
   moduleServer(id, function(input, output, session) {
+    
+    observe({
+      watch("session")
+      update_switch(id = "by_cond_input", value = r6$protein_rank_by_cond)
+      updateSelectInput(inputId = "target", selected = r6$protein_rank_target)
+      updateSelectInput(inputId = "selections", selected = r6$protein_rank_selection)
+      updateSliderInput(inputId = "top_n_slider", value = r6$protein_rank_top_n * 100)
+    })
 
     observe({
       watch("genes")

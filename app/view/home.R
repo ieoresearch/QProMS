@@ -42,7 +42,7 @@ ui <- function(id) {
             )
           ),
           accordion_panel(
-            title = "Upload Saved Analysis",
+            title = "Restore analysis session",
             id = ns("params"),
             fileInput(
               inputId = ns("upload_params"),
@@ -51,7 +51,7 @@ ui <- function(id) {
                   "Saved Analysis",
                   icon("info-circle")
                 ),
-                "Upload a QProMS_analysis.rds file for reproducibility or to continue a previous analysis. Is not necessary for new analysis."
+                "You MUST upload a QProMS_analysis.rds file to continue a previous analysis. Is not necessary for new analysis."
               ),
               multiple = FALSE,
               placeholder = "QProMS_analysis.rds",
@@ -97,7 +97,7 @@ ui <- function(id) {
 server <- function(id, r6, main_session) {
   moduleServer(id, function(input, output, session) {
     
-    init("expdesig")
+    init("expdesig", "session")
     
     observeEvent(input$confirm, {
       if(is.null(input$upload_file)) {
@@ -121,8 +121,8 @@ server <- function(id, r6, main_session) {
     observeEvent(input$start_with_params, {
       if(is.null(input$upload_params)) {
         shinyalert(
-          title = "Missing QProMS_parameters.yaml file!",
-          text = "Before pressing START you MUST upload a params file.",
+          title = "Missing QProMS_analysis.rds file!",
+          text = "Before pressing START you MUST upload a QProMS_analysis.rds file.",
           size = "m",
           closeOnClickOutside = TRUE,
           type = "info",
@@ -133,7 +133,7 @@ server <- function(id, r6, main_session) {
       req(input$upload_params)
       if(!is.null(input$upload_params)) {
         r6$loading_parameters(input_path = input$upload_params$datapath, r6)
-        trigger("plot", "genes")
+        trigger("session", "plot", "genes")
         nav_select("top_navigation", "Preprocessing", session = main_session)
       }
     })

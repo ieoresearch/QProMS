@@ -1,5 +1,5 @@
 box::use(
-  shiny[moduleServer, NS, selectInput, br, actionButton, observeEvent, updateSelectizeInput, observe, selectizeInput, isolate, icon, reactive],
+  shiny[moduleServer, NS, selectInput, br, actionButton, observeEvent, updateSelectInput, observe, isolate, icon, reactive],
   bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, sidebar, accordion, accordion_panel, tooltip, input_switch],
   echarts4r[echarts4rOutput, renderEcharts4r],
   trelliscope[trelliscopeOutput, renderTrelliscope],
@@ -63,6 +63,11 @@ ui <- function(id) {
 #' @export
 server <- function(id, r6) {
   moduleServer(id, function(input, output, session) {
+    
+    observe({
+      watch("session")
+      updateSelectInput(inputId = "correlation_input", selected = r6$cor_method)
+    })
     
     observeEvent(input$update, {
       r6$cor_method <- input$correlation_input

@@ -1,7 +1,7 @@
 box::use(
-  shiny[moduleServer, NS, radioButtons, actionButton, hr, h3, h4, br, div, observeEvent, req, sliderInput, strong],
+  shiny[moduleServer, NS, radioButtons, actionButton, hr, updateSliderInput, updateRadioButtons, h3, h4, br, div, observeEvent, req, sliderInput, strong, observe],
   bslib[page_fillable, layout_columns, card, card_header, card_body, accordion, accordion_panel, accordion_panel_close, accordion_panel_open, nav_select, tooltip],
-  esquisse[palettePicker],
+  esquisse[palettePicker, updatePalettePicker],
   viridis[viridis],
   purrr[map, set_names],
   dplyr[`%>%`, filter, select],
@@ -69,6 +69,14 @@ ui <- function(id) {
 #' @export
 server <- function(id, r6) {
   moduleServer(id, function(input, output, session) {
+    
+    observe({
+      watch("session")
+      updatePalettePicker(inputId = "palette", choices = palette_choices, selected = r6$palette)
+      updateSliderInput(inputId = "text_sixe", value = r6$plot_font_size)
+      updateRadioButtons(inputId = "plot_format", selected = r6$plot_format)
+    })
+    
     
     observeEvent(input$update, {
       r6$plot_format <- input$plot_format

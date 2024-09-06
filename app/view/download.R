@@ -78,7 +78,7 @@ ui <- function(id) {
               )
             ),
             accordion_panel(
-              title = "Download Parameters",
+              title = "Save Analysis Session",
               id = ns("parmas"),
               layout_columns(
                 col_widths = c(9, 3),
@@ -86,7 +86,7 @@ ui <- function(id) {
                   class = "alert alert-info",
                   style = "white-space: pre-wrap;",
                   role = "alert",
-                  "All the date generated during the analysis will be stored in this QProMS_analysis.rds file. You can reload this file to maintain reproducibility or to continue a previous analysis."
+                  "The analysis session with all the parameters used will be stored in a QProMS_analysis.rds file. You can reload this file into home page to continue the analysis."
                 ),
                 downloadButton(
                   outputId = ns("download_params"),

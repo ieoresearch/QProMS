@@ -1,6 +1,6 @@
 box::use(
-  shiny[moduleServer, NS, selectInput, br, sliderInput, actionButton, isolate, icon, observe, updateSelectInput, updateSelectizeInput, reactive, observeEvent, numericInput, conditionalPanel, selectizeInput],
-  bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, sidebar, accordion, accordion_panel, input_switch, tooltip, input_task_button],
+  shiny[moduleServer, NS, selectInput, br, sliderInput, actionButton, isolate, icon, observe, updateNumericInput, updateSliderInput, updateSelectInput, updateSelectizeInput, reactive, observeEvent, numericInput, conditionalPanel, selectizeInput],
+  bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, update_switch, sidebar, accordion, accordion_panel, input_switch, tooltip, input_task_button],
   gargoyle[watch, trigger],
   trelliscope[trelliscopeOutput, renderTrelliscope],
   reactable[reactableOutput, renderReactable, getReactableState],
@@ -167,6 +167,25 @@ server <- function(id, r6) {
     observe({
       watch("stat")
       updateSelectInput(inputId = "volcano_input", choices = r6$contrasts, selected = r6$contrasts[1])
+    })
+    
+    observe({
+      watch("session")
+      updateSelectInput(inputId = "rank_with", selected = r6$go_gsea_rank_with)
+      update_switch(id = "by_cond_input", value = r6$go_gsea_by_cond)
+      if(r6$go_gsea_by_cond){
+        ch <- unique(r6$expdesign$condition)
+        updateSelectInput(inputId = "target", choices = ch, selected = ch[1])
+      } else {
+        updateSelectInput(inputId = "target", choices = r6$expdesign$label, selected = r6$expdesign$label[1])
+      }
+      updateSelectInput(inputId = "volcano_input", choices = r6$contrasts, selected = r6$contrasts[1])
+      updateSelectInput(inputId = "ontology_input", selected = r6$go_gsea_term)
+      updateSliderInput(inputId = "simplify_thr", value = r6$go_gsea_simplify_thr)
+      updateNumericInput(inputId = "alpha_input", value = r6$go_gsea_alpha)
+      updateSelectInput(inputId = "truncation_input", selected = r6$go_gsea_p_adj_method)
+      updateSelectInput(inputId = "arrenged", selected = r6$go_gsea_plot_arrenge)
+      updateNumericInput(inputId = "show_category", value = r6$go_gsea_top_n)
     })
 
     observeEvent(input$update ,{

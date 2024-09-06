@@ -1,6 +1,6 @@
 box::use(
-  shiny[moduleServer, NS, actionButton, br, selectInput, icon, div, numericInput, observe, updateSelectInput, observeEvent, req, isolate, reactive],
-  bslib[page_sidebar, layout_columns, navset_card_underline, nav_select, nav_panel, sidebar, tooltip, input_switch, accordion, accordion_panel, input_task_button],
+  shiny[moduleServer, NS, actionButton, br, selectInput, icon, div, numericInput, observe, updateSelectInput, updateNumericInput, observeEvent, req, isolate, reactive],
+  bslib[page_sidebar, layout_columns, navset_card_underline, nav_select, nav_panel, sidebar, tooltip, input_switch, update_switch, accordion, accordion_panel, input_task_button],
   gargoyle[watch, trigger, init],
   reactable[reactableOutput, renderReactable, getReactableState],
   trelliscope[trelliscopeOutput, renderTrelliscope],
@@ -115,6 +115,16 @@ server <- function(id, r6) {
   moduleServer(id, function(input, output, session) {
     
     init("heatmap")
+    
+    observe({
+      watch("session")
+      updateNumericInput(inputId = "n_cluster_input", value = r6$clusters_number)
+      updateSelectInput(inputId = "clust_method", selected = r6$anova_clust_method)
+      updateSelectInput(inputId = "truncation_input_milti", selected = r6$anova_p_adj_method)
+      update_switch(id = "zscore_input", value = r6$z_score)
+      update_switch(id = "order_by_expdesing", value = r6$anova_manual_order)
+      updateNumericInput(inputId = "alpha_input_milti", value = r6$anova_alpha)
+    })
     
     observeEvent(input$update ,{
       r6$anova_alpha <- input$alpha_input_milti

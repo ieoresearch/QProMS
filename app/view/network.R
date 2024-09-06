@@ -1,6 +1,6 @@
 box::use(
-  shiny[moduleServer, NS, selectInput, br, sliderInput, actionButton, isolate, icon, observe, updateSelectInput, reactive, observeEvent, conditionalPanel],
-  bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, sidebar, accordion, accordion_panel, input_switch, tooltip, input_task_button],
+  shiny[moduleServer, NS, selectInput, br, sliderInput, actionButton, isolate, icon, observe, updateSliderInput, updateSelectInput, reactive, observeEvent, conditionalPanel],
+  bslib[page_sidebar, layout_columns, navset_card_underline, update_switch, nav_panel, sidebar, accordion, accordion_panel, input_switch, tooltip, input_task_button],
   gargoyle[watch, trigger],
   echarts4r[echarts4rOutput, renderEcharts4r],
   reactable[reactableOutput, renderReactable, getReactableState],
@@ -205,6 +205,20 @@ server <- function(id, r6) {
       watch("heatmap")
       ch <- paste0("cluster_", 1:r6$clusters_number)
       updateSelectInput(inputId = "clusters_input", choices = ch, selected = ch[1])
+    })
+    
+    observe({
+      watch("session")
+      updateSelectInput(inputId = "strategy", selected = r6$network_from_statistic)
+      update_switch(id = "by_cond_input", value = r6$protein_rank_by_cond)
+      updateSelectInput(inputId = "target", selected = r6$protein_rank_target)
+      updateSelectInput(inputId = "selections", selected = r6$protein_rank_selection)
+      updateSliderInput(inputId = "top_n_slider", value = r6$protein_rank_top_n * 100)
+      updateSelectInput(inputId = "test_uni_input", choices = r6$contrasts, selected = r6$contrasts[1])
+      updateSelectInput(inputId = "ui_direction_input", selected = r6$network_uni_direction)
+      updateSelectInput(inputId = "clusters_input", selected = r6$network_focus_multi)
+      updateSelectInput(inputId = "db_source", selected = r6$pdb_database)
+      updateSliderInput(inputId = "score_thr", value = r6$network_score_thr)
     })
     
     observeEvent(input$update ,{

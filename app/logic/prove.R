@@ -17,6 +17,7 @@ box::use(app/static/contaminants)
 r6 <- R6Class_QProMS$QProMS$new()
 # r6$loading_data(input_path = "app/static/proteinGroups.txt", input_name = "test")
 r6$loading_data(input_path = "app/static/combined_protein.tsv", input_name = "test")
+a <- r6$loading_parameters(input_path = "/Users/bedin.fabio/Desktop/QProMS_parameters_2024-09-04.yaml", r6)
 msg <- r6$identify_table_type()
 r6$create_summary_table()
 r6$make_expdesign("MaxLFQ Intensity")
@@ -49,4 +50,58 @@ r6$organism <- "human"
 r6$make_edges("string")
 r6$plot_heatmap(order_by_expdesing = FALSE)
 
+names(r6)
+get(class(r6))
+names(get(class())$public_fields)
+r6$public_fields()
+
+names(r6$public_fields)
+
+R6_extract_values <- function(r6class){
+  tmp <- sapply(r6class, class)
+  slots <- tmp[ !tmp %in% c("environment", "function")]
+  res <- list()
+  for (i in names(slots)) {
+    if ("R6" %in% class(r6class[[i]])) {
+      res[[i]]  <- R6_extract_values(r6class[[i]])
+    }else{
+      res[[i]] <- r6class[[i]]
+    }
+  }
+  return(res)
+}
+R6_extract_values(r6)
+
+extract_params_values <- function(r6class) {
+  tmp <- sapply(r6class, class)
+  slots <- tmp[!tmp %in% c("environment", "function")]
+  imap(slots, ~ {
+    if ("R6" %in% class(r6class[[.y]])) {
+      R6_extract_values(r6class[[.y]])
+    } else {
+      r6class[[.y]]
+    }
+  })
+}
+
+a <- extract_params_values(r6)
+
+tmp <- sapply(r6, class)
+tmp <- map(tmp, pluck, 1)
+tmp <- tmp[!tmp %in% c("environment", "function", "tbl_df", "data.table", "hclust", "matrix")]
+tmp$raw_data <- r6$raw_data
+imap(slots, ~ {
+  if ("R6" %in% class(r6class[[.y]])) {
+    R6_extract_values(r6class[[.y]])
+  } else {
+    r6class[[.y]]
+  }
+})
+aa <- r6$save_params_as_list(r6)
+
+aa$pdb_database <- "pippo"
+
+r6$loading_parameters(r6, parameters_list = aa)
+
+r6$pdb_database
 

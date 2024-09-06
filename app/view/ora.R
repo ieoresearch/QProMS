@@ -1,6 +1,6 @@
 box::use(
-  shiny[moduleServer, NS, selectInput, br, sliderInput, actionButton, isolate, icon, observe, updateSelectInput, updateSelectizeInput, reactive, observeEvent, numericInput, conditionalPanel, selectizeInput],
-  bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, sidebar, accordion, accordion_panel, input_switch, tooltip, input_task_button],
+  shiny[moduleServer, NS, selectInput, br, sliderInput, actionButton, updateSliderInput, updateNumericInput, isolate, icon, observe, updateSelectInput, updateSelectizeInput, reactive, observeEvent, numericInput, conditionalPanel, selectizeInput],
+  bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, update_switch, sidebar, accordion, accordion_panel, input_switch, tooltip, input_task_button],
   gargoyle[watch, trigger],
   trelliscope[trelliscopeOutput, renderTrelliscope],
   reactable[reactableOutput, renderReactable, getReactableState],
@@ -205,6 +205,26 @@ server <- function(id, r6) {
       watch("heatmap")
       chh <- paste0("cluster_", 1:r6$clusters_number)
       updateSelectInput(inputId = "clusters_input", choices = chh, selected = chh[1])
+    })
+    
+    observe({
+      watch("session")
+      updateSelectInput(inputId = "strategy", selected = r6$go_ora_from_statistic)
+      update_switch(id = "by_cond_input", value = r6$protein_rank_by_cond)
+      updateSelectInput(inputId = "target", selected = r6$protein_rank_target)
+      updateSelectInput(inputId = "selections", selected = r6$protein_rank_selection)
+      updateSliderInput(inputId = "top_n_slider", value = r6$protein_rank_top_n * 100)
+      chs <- unlist(map(r6$contrasts, ~ c(paste0(.x, "_up"), paste0(.x, "_down"))))
+      updateSelectInput(inputId = "volcano_input", choices = chs, selected = chs[1])
+      chh <- paste0("cluster_", 1:r6$clusters_number)
+      updateSelectInput(inputId = "clusters_input", choices = chh, selected = chh[1])
+      updateSelectInput(inputId = "ontology_input", selected = r6$go_ora_term)
+      updateSliderInput(inputId = "simplify_thr", value = r6$go_ora_simplify_thr)
+      update_switch(id = "background_input", value = r6$go_ora_background)
+      updateNumericInput(inputId = "alpha_input", value = r6$go_ora_alpha)
+      updateSelectInput(inputId = "truncation_input", selected = r6$go_ora_p_adj_method)
+      updateSelectInput(inputId = "arrenged", selected = r6$go_ora_plot_arrenge)
+      updateNumericInput(inputId = "show_category", value = r6$go_ora_top_n)
     })
     
     observe({

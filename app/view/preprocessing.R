@@ -1,6 +1,6 @@
 box::use(
-  shiny[moduleServer, NS, selectInput, sliderInput, br, actionButton, observeEvent, icon, observe, req, conditionalPanel],
-  bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, sidebar, accordion, accordion_panel, input_switch, accordion_panel_remove, tooltip],
+  shiny[moduleServer, NS, selectInput, sliderInput, updateSelectInput, updateSliderInput, br, actionButton, observeEvent, icon, observe, req, conditionalPanel],
+  bslib[page_sidebar, layout_columns, navset_card_underline, nav_panel, update_switch, sidebar, accordion, accordion_panel, input_switch, accordion_panel_remove, tooltip],
   echarts4r[echarts4rOutput, renderEcharts4r],
   gargoyle[watch, trigger],
   trelliscope[trelliscopeOutput, renderTrelliscope],
@@ -206,6 +206,21 @@ ui <- function(id) {
 #' @export
 server <- function(id, r6) {
   moduleServer(id, function(input, output, session) {
+    
+    observe({
+      watch("session")
+      updateSelectInput(inputId = "valid_values_input", selected = r6$valid_val_filter)
+      updateSelectInput(inputId = "valid_values_slider", selected = r6$valid_val_thr*100)
+      updateSelectInput(inputId = "peptides_input", selected = r6$pep_filter)
+      updateSelectInput(inputId = "normalization_input", selected = r6$norm_methods)
+      updateSelectInput(inputId = "imputation_input", selected = r6$imp_methods)
+      updateSliderInput(inputId = "peptides_slider", value = r6$pep_thr)
+      updateSliderInput(inputId = "shift_slider", value = r6$imp_shift)
+      updateSliderInput(inputId = "scale_slider", value = r6$imp_scale)
+      update_switch(id = "rev", value = r6$rev)
+      update_switch(id = "cont", value = r6$cont)
+      update_switch(id = "oibs", value = r6$oibs)
+    })
     
     observe({
       watch("genes")
