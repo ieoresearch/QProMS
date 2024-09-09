@@ -1,7 +1,6 @@
 box::use(
   shiny[div, moduleServer, NS, strong, icon],
   bslib[page_navbar, page_sidebar, nav_panel, nav_item, sidebar, nav_spacer, page_fluid],
-  reactable.extras[reactable_extras_dependency],
 )
 
 box::use(
@@ -32,7 +31,7 @@ ui <- function(id) {
     title = strong("QProMS"),
     sidebar = NULL,
     header = list(
-      reactable_extras_dependency()
+      # use_empty_state()
     ),
     nav_spacer(),
     nav_panel(title = "Home", home$ui(ns("home"))),

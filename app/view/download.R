@@ -123,14 +123,14 @@ server <- function(id, r6) {
         paste0(input$select_table, "_table_", Sys.Date(), input$table_extension)
       },
       content = function(file) {
-       
-        r6$download_table(
-          handler_file = file,
-          table_type = input$select_table,
-          table_extension = input$table_extension,
-          extra_columns = input$add_metadata
-        )
-       
+       if(!is.null(r6$data)) {
+         r6$download_table(
+           handler_file = file,
+           table_type = input$select_table,
+           table_extension = input$table_extension,
+           extra_columns = input$add_metadata
+         )
+       }
       }
     )
     
@@ -139,33 +139,29 @@ server <- function(id, r6) {
         paste0("QProMS_report_", Sys.Date(), ".html")
       },
       content = function(file) {
-        
-        params <- c("Preprocessing", "PCA", "Correlation", "Rank",
-                    "Volcano", "Heatmap", "Network", "ORA", "GSEA")
-        
-        shinyalert(
-          title = "The report is rendering",
-          text = "Wait the download window to pops, the report is rendering in background.",
-          size = "m",
-          closeOnClickOutside = TRUE,
-          type = "info",
-          showConfirmButton = FALSE,
-          timer = 0
-        )
-        
-        r6$download_parameters(handler_file = "app/logic/QProMS_session_internal.rds", r6class = r6)
-
-        param_list <- map(params, ~ .x %in% isolate(input$report_section)) %>%
-         set_names(params)
-        
-        quarto_render(
-          "app/logic/Report_QProMS.qmd",
-          execute_params = param_list,
-          quiet = FALSE
-        )
-        
-        file.copy("app/logic/Report_QProMS.html", file)
-        file.remove("app/logic/Report_QProMS.html")
+        if(!is.null(r6$data)) {
+          params <- c("Preprocessing", "PCA", "Correlation", "Rank",
+                      "Volcano", "Heatmap", "Network", "ORA", "GSEA")
+          shinyalert(
+            title = "The report is rendering",
+            text = "Wait the download window to pops, the report is rendering in background.",
+            size = "m",
+            closeOnClickOutside = TRUE,
+            type = "info",
+            showConfirmButton = FALSE,
+            timer = 0
+          )
+          r6$download_parameters(handler_file = "app/logic/QProMS_session_internal.rds", r6class = r6)
+          param_list <- map(params, ~ .x %in% isolate(input$report_section)) %>%
+            set_names(params)
+          quarto_render(
+            "app/logic/Report_QProMS.qmd",
+            execute_params = param_list,
+            quiet = FALSE
+          )
+          file.copy("app/logic/Report_QProMS.html", file)
+          file.remove("app/logic/Report_QProMS.html")
+        }
       }
     )
     
@@ -174,8 +170,10 @@ server <- function(id, r6) {
         paste0("QProMS_analysis_", Sys.Date(), ".rds")
       },
       content = function(file) {
-        r6$new_session <- FALSE
-        r6$download_parameters(handler_file = file, r6class = r6)
+        if(!is.null(r6$data)) {
+          r6$new_session <- FALSE
+          r6$download_parameters(handler_file = file, r6class = r6)
+        }
       }
     )
     

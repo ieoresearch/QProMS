@@ -6,7 +6,7 @@ box::use(
   trelliscope[trelliscopeOutput, renderTrelliscope],
   plotly[plotlyOutput, renderPlotly],
   echarts4r[echarts4rOutput, renderEcharts4r],
-  dplyr[pull, `%>%`]
+  dplyr[pull, `%>%`],
 )
 
 #' @export

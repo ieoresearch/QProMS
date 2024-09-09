@@ -105,3 +105,13 @@ r6$loading_parameters(r6, parameters_list = aa)
 
 r6$pdb_database
 
+a <- c("Prepocessing", "PCA", "Correlation", "Rank", "Volcano", "Heatmap", "Network", "ORA", "GSEA")
+b <- c("PCA", "Correlation", "Rank", "Volcano", "Heatmap")
+
+check_terms <- function(input_vector) {
+  
+  
+  return(result_list)
+}
+
+check_terms(b)

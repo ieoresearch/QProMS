@@ -64,6 +64,23 @@ ui <- function(id) {
               label = "START",
               style = "width: 100%;"
             )
+          ),
+          accordion_panel(
+            title = "Example Dataset",
+            id = ns("example"),
+            selectInput(
+              inputId = ns("example"),
+              label = "Datasets",
+              choices = c("proteinGroups_p62.txt"),
+              width = "100%",
+              selected = "proteinGroups_p62.txt"
+            ),
+            br(),
+            input_task_button(
+              id = ns("start_with_example"),
+              label = "START",
+              style = "width: 100%;"
+            )
           )
         )
       ),
@@ -136,6 +153,12 @@ server <- function(id, r6, main_session) {
         trigger("session", "plot", "genes")
         nav_select("top_navigation", "Preprocessing", session = main_session)
       }
+    })
+    
+    observeEvent(input$start_with_example, {
+      r6$loading_parameters(input_path = "app/static/QProMS_example_dataset_p62.rds", r6)
+      trigger("session", "plot", "genes")
+      nav_select("top_navigation", "Preprocessing", session = main_session)
     })
   })
 }
