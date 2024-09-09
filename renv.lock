@@ -1802,6 +1802,16 @@
       ],
       "Hash": "f115be19bd3acf1fe669b82a3ab44cef"
     },
+    "here": {
+      "Package": "here",
+      "Version": "1.0.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "rprojroot"
+      ],
+      "Hash": "24b224366f9c2e7534d2344d10d59211"
+    },
     "highr": {
       "Package": "highr",
       "Version": "0.10",
@@ -2519,6 +2529,26 @@
       "Source": "Repository",
       "Repository": "RSPM",
       "Hash": "21c4fc168ebf32add2db6a358ce4714c"
+    },
+    "quarto": {
+      "Package": "quarto",
+      "Version": "1.4.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "cli",
+        "jsonlite",
+        "later",
+        "processx",
+        "rlang",
+        "rmarkdown",
+        "rstudioapi",
+        "tools",
+        "utils",
+        "yaml"
+      ],
+      "Hash": "af456d7a181750812bd8b2bfedb3ea4e"
     },
     "qvalue": {
       "Package": "qvalue",

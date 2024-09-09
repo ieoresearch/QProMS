@@ -1,7 +1,11 @@
 box::use(
-  shiny[moduleServer, observe, downloadButton, updateSelectInput, downloadHandler, NS, conditionalPanel, radioButtons, selectInput, actionButton, hr, h3, h4, br, div, observeEvent, req, sliderInput, checkboxGroupInput],
+  shiny[moduleServer, observe, downloadButton, updateSelectInput, downloadHandler, NS, conditionalPanel, radioButtons, selectInput, actionButton, hr, h3, h4, br, div, observeEvent, req, sliderInput, checkboxGroupInput, isolate],
   bslib[page_fillable, layout_columns, card, card_header, card_body, accordion, accordion_panel, nav_select, tooltip],
   gargoyle[init, watch, trigger],
+  quarto[quarto_render],
+  purrr[set_names, map],
+  shinyalert[shinyalert],
+  dplyr[`%>%`],
 )
 
 #' @export
@@ -64,9 +68,9 @@ ui <- function(id) {
                 checkboxGroupInput(
                   inputId = ns("report_section"),
                   label = "Report Section",
-                  choices = c("Prepocessing", "PCA", "Correlation", "Rank", "Volcano", "Heatmap", "Network", "ORA", "GSEA"),
+                  choices = c("Preprocessing", "PCA", "Correlation", "Rank", "Volcano", "Heatmap", "Network", "ORA", "GSEA"),
                   inline = TRUE,
-                  selected = c("Prepocessing", "PCA", "Correlation", "Rank", "Volcano", "Heatmap", "Network", "ORA", "GSEA")
+                  selected = c("Preprocessing", "PCA", "Correlation", "Rank", "Volcano", "Heatmap", "Network", "ORA", "GSEA")
                 ),
                 downloadButton(
                   outputId = ns("download_report"),
@@ -130,11 +134,47 @@ server <- function(id, r6) {
       }
     )
     
+    output$download_report <- downloadHandler(
+      filename = function() {
+        paste0("QProMS_report_", Sys.Date(), ".html")
+      },
+      content = function(file) {
+        
+        params <- c("Preprocessing", "PCA", "Correlation", "Rank",
+                    "Volcano", "Heatmap", "Network", "ORA", "GSEA")
+        
+        shinyalert(
+          title = "The report is rendering",
+          text = "Wait the download window to pops, the report is rendering in background.",
+          size = "m",
+          closeOnClickOutside = TRUE,
+          type = "info",
+          showConfirmButton = FALSE,
+          timer = 0
+        )
+        
+        r6$download_parameters(handler_file = "app/logic/QProMS_session_internal.rds", r6class = r6)
+
+        param_list <- map(params, ~ .x %in% isolate(input$report_section)) %>%
+         set_names(params)
+        
+        quarto_render(
+          "app/logic/Report_QProMS.qmd",
+          execute_params = param_list,
+          quiet = FALSE
+        )
+        
+        file.copy("app/logic/Report_QProMS.html", file)
+        file.remove("app/logic/Report_QProMS.html")
+      }
+    )
+    
     output$download_params <- downloadHandler(
       filename = function() {
         paste0("QProMS_analysis_", Sys.Date(), ".rds")
       },
       content = function(file) {
+        r6$new_session <- FALSE
         r6$download_parameters(handler_file = file, r6class = r6)
       }
     )

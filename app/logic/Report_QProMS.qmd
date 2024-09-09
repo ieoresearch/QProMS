@@ -1,0 +1,382 @@
+---
+title: "QProMS Report"
+subtitle: "Quantitative Proteomic Made Simple"
+date: today
+format:
+  html:
+    self-contained: true
+    theme: flatly
+    page-layout: article
+    toc: true
+    toc-location: left
+    toc-depth: 3
+    smooth-scroll: true
+    grid:
+      sidebar-width: 250px
+      body-width: 1100px
+      margin-width: 150px
+      gutter-width: 1.5rem
+execute:
+  echo: false
+  warning: false
+  message: false
+params: 
+  Preprocessing: TRUE
+  PCA: TRUE
+  Correlation: TRUE
+  Rank: TRUE
+  Volcano: TRUE
+  Heatmap: TRUE
+  Network: TRUE
+  ORA: TRUE
+  GSEA: TRUE
+---
+
+This is a report summarizing the results obtained from [QProMS App](https://bioserver.ieo.it/shiny/app/qproms).
+
+```{r}
+#| label: "load libreries"
+
+suppressPackageStartupMessages(library(dplyr))
+suppressPackageStartupMessages(library(purrr))
+suppressPackageStartupMessages(library(here))
+suppressPackageStartupMessages(library(reactable))
+```
+
+```{r}
+#| label: "upload session"
+
+box::use(app/logic/R6Class_QProMS)
+r6 <- R6Class_QProMS$QProMS$new()
+r6$loading_parameters(input_path = here("app/logic/QProMS_session_internal.rds"), self = r6)
+```
+
+```{r}
+#| label: "check params"
+
+Volcano_param <- !is.null(r6$stat_table) && params$Volcano
+Heatmap_param <- !is.null(r6$anova_table) && params$Heatmap
+Network_param <- !is.null(r6$nodes_table) && !is.null(r6$edges_table) && params$Network
+ORA_param     <- !is.null(r6$ora_table) && params$ORA
+GSEA_param    <- !is.null(r6$gsea_table) && params$GSEA
+```
+
+## Experimental Design
+
+The following table presents an overview of the experimental design employed in this study. This design outlines the key elements, including the treatments, sample groups, and any control conditions used during the experiment. By clearly defining the structure and parameters of the experiment, this summary ensures that the methodology is transparent and reproducible, providing a foundation for the subsequent analysis and discussion.
+
+```{r}
+#| label: "expdesign"
+
+r6$expdesign %>%
+  select(
+    Key = key,
+    Label = label,
+    Condition = condition,
+    Replicate = replicate
+  ) %>%
+  reactable(
+    wrap = FALSE,
+    striped = TRUE,
+    resizable = TRUE,
+    compact = TRUE,
+    height = "auto",
+    paginationType = "simple",
+  )
+```
+
+`r if(!params$Preprocessing) "::: {.content-hidden}"`
+
+## Preprocessing
+
+The following section presents a series of interactive quality control (QC) graphs that were generated to assess the reliability and accuracy of the proteomics data. These visualizations allow for in-depth exploration of the data, making it easier to identify any potential issues in data acquisition, processing, or analysis. By evaluating various QC metrics, such as data completeness, peptide intensity distributions, and reproducibility across samples, we ensure that the experimental results are robust and suitable for downstream analysis.
+
+::: panel-tabset
+
+### Counts
+
+```{r}
+#| label: "count"
+#| eval: !expr if(params$Preprocessing) TRUE else FALSE
+
+r6$plot_protein_counts()
+```
+
+### Distribution
+
+```{r}
+#| label: "distribution"
+#| eval: !expr if(params$Preprocessing) TRUE else FALSE
+
+r6$plot_distribution()
+```
+
+### Upset Plot
+
+```{r}
+#| label: "upset"
+#| eval: !expr if(params$Preprocessing) TRUE else FALSE
+
+r6$plot_protein_coverage()
+```
+
+### CV
+
+```{r}
+#| label: "cv"
+#| eval: !expr if(params$Preprocessing) TRUE else FALSE
+
+r6$plot_cv()
+```
+
+### Missing Data
+
+```{r}
+#| label: "missing data"
+#| eval: !expr if(params$Preprocessing) TRUE else FALSE
+
+r6$plot_missing_data()
+```
+
+### Imputed
+
+```{r}
+#| label: "imputed"
+#| eval: !expr if(params$Preprocessing) TRUE else FALSE
+
+r6$plot_missval_distribution_internal("total")
+```
+
+:::
+
+`r if(!params$Preprocessing) ":::"`
+
+`r if(!params$PCA) "::: {.content-hidden}"`
+
+## Principal Component Analysis (PCA)
+
+The following plot presents the results of a Principal Component Analysis (PCA) conducted on the experimental samples. PCA is a dimensionality reduction technique that transforms the data into a set of principal components, which capture the most significant sources of variation in the dataset. In the plot, each point represents a sample, and the proximity of points indicates similarity in their proteomic profiles.
+
+The x-axis (PC1) and y-axis (PC2) represent the first two principal components, which typically explain the largest variance in the data. Clusters of points suggest that those samples share similar characteristics, while distant points may indicate outliers or distinct subgroups. This visualization is valuable for identifying patterns, trends, and potential groupings within the data, aiding in the interpretation of experimental results.
+
+```{r}
+#| label: "pca"
+#| eval: !expr if(params$PCA) TRUE else FALSE
+
+r6$plot_pca()
+```
+
+`r if(!params$PCA) ":::"`
+
+`r if(!params$Correlation) "::: {.content-hidden}"`
+
+## Correlation Heatmap
+
+The following heatmap illustrates the correlation between all samples included in the experiment. This visualization provides a comprehensive overview of the relationships among the samples by displaying pairwise correlation coefficients. High correlation values indicate similar proteomic profiles, suggesting consistency between replicates or related samples, while lower correlation values may point to variations or outliers. This heatmap serves as a crucial tool for evaluating the quality and homogeneity of the data, helping to identify any discrepancies that might impact downstream analyses.
+
+```{r}
+#| label: "correlation"
+#| eval: !expr if(params$Correlation) TRUE else FALSE
+
+r6$plot_correlation()
+```
+
+`r if(!params$Correlation) ":::"`
+
+`r if(!params$Rank) "::: {.content-hidden}"`
+
+## Protein Intensity Ranking
+
+The following plot ranks the proteins detected in the experiment based on their intensity levels. This ranking provides a clear visualization of the distribution of protein abundances, highlighting both the most and least abundant proteins within the dataset. Proteins with higher intensity values are positioned towards the top, reflecting their more prominent expression in the samples, while those with lower intensities appear towards the bottom.
+
+This plot is particularly useful for identifying highly expressed proteins that may play significant roles in the biological processes under study, as well as for examining the overall dynamic range of protein expression within the experiment. By analyzing this distribution, we can gain insights into the proteomic landscape and prioritize proteins for further investigation.
+
+```{r}
+#| label: "rank"
+#| eval: !expr if(params$Rank) TRUE else FALSE
+
+r6$plot_protein_rank()
+```
+
+`r if(!params$Rank) ":::"`
+
+`r if(!Volcano_param) "::: {.content-hidden}"`
+
+## Volcano Plot
+
+The following volcano plot visualizes the results of the differential expression analysis conducted on the proteins in the experiment. This type of plot is particularly useful for identifying proteins that show statistically significant differences in expression between experimental conditions.
+
+In the volcano plot, each point represents a protein, with the x-axis displaying the difference (log2 fold change) in expression between conditions and the y-axis showing the negative log10 of the p-value. Proteins located towards the edges of the plot, particularly in the upper left and right quadrants, are of particular interest. These points represent proteins that not only exhibit large changes in expression (high fold change) but also meet the criteria for statistical significance (low p-value).
+
+- Proteins on the left side indicate downregulation (lower expression in the experimental condition compared to the control).
+- Proteins on the right side indicate upregulation (higher expression in the experimental condition).
+- Proteins near the top are statistically significant due to low p-values, while those near the bottom are not.
+
+This plot helps to quickly identify key proteins that are differentially expressed and may be of biological significance, guiding further investigation.
+
+```{r}
+#| label: "volcano generation"
+#| eval: !expr if(Volcano_param) TRUE else FALSE
+
+plots <- map(
+  .x = r6$contrasts,
+  .f = ~ r6$plot_volcano_single(
+    test = .x,
+    highlights_names = "",
+    same_x = r6$univariate_same_x,
+    same_y = r6$univariate_same_y
+  )
+) %>%
+  set_names(r6$contrasts)
+```
+
+```{r}
+#| label: "volcano plots"
+#| eval: !expr if(Volcano_param) TRUE else FALSE
+#| echo: false
+#| output: asis
+
+cat("::: panel-tabset \n")
+for (p_name in names(plots)) {
+  cat("  \n###", p_name, "  \n")
+  print(htmltools::tagList(plots[[p_name]]))
+  cat("  \n")
+}
+cat("::: \n")
+```
+
+`r if(!Volcano_param) ":::"`
+
+`r if(!Heatmap_param) "::: {.content-hidden}"`
+
+## Heatmap
+
+The following heatmap visualizes the results of an ANOVA (Analysis of Variance) test performed on the proteomic data. This statistical test is used to identify proteins that show significant differences in expression across multiple experimental groups. The heatmap highlights the proteins that were found to be differentially expressed based on the ANOVA test.
+
+In this visualization, rows represent individual proteins, and columns correspond to the different experimental groups. The color intensity indicates the level of protein expression, with distinct patterns revealing how expression levels vary across the groups. Proteins with similar expression profiles tend to cluster together, providing insights into potential functional relationships and group-specific effects.
+
+This heatmap serves as a powerful tool for identifying proteins that are significantly affected by the experimental conditions and may be involved in the underlying biological processes being studied.
+
+```{r}
+#| label: "heatmap"
+#| eval: !expr if(Heatmap_param) TRUE else FALSE
+
+r6$plot_heatmap(order_by_expdesing = r6$anova_manual_order)
+```
+
+`r if(!Heatmap_param) ":::"`
+
+`r if(!Network_param) "::: {.content-hidden}"`
+
+## Protein-Protein Interaction Network
+
+The following network visualization represents the protein-protein interactions (PPIs) identified in the experiment, generated using data from the STRING and CORUM databases. This network helps to uncover the relationships and interactions between proteins, shedding light on potential functional associations and pathways.
+
+- STRING Database (Search Tool for the Retrieval of Interacting Genes/Proteins): STRING is a comprehensive resource that compiles known and predicted protein-protein interactions from various sources, including experimental data, computational predictions, and text mining. It provides a high-confidence network by integrating evidence of functional associations, helping to identify potential interactions that may not be immediately apparent.
+
+- CORUM Database (Comprehensive Resource of Mammalian Protein Complexes): CORUM is a specialized database that focuses on experimentally validated protein complexes in mammalian species. It offers detailed information on the composition and function of protein complexes, enabling the identification of proteins that work together as part of multi-protein assemblies.
+
+In the network visualization, edges from STRING are colored in gray, while edges from CORUM are colored in green. The thickness of the edges is proportional to the interaction score, with thicker edges indicating stronger or more confident interactions. Clusters of interconnected proteins suggest functional modules or complexes that may play significant roles in the biological processes under investigation. By analyzing this network, we can gain insights into the molecular mechanisms driving the experimental outcomes and prioritize proteins for further study.
+
+```{r}
+#| label: "network"
+#| eval: !expr if(Network_param) TRUE else FALSE
+
+r6$plot_ppi_network(
+  list_from = r6$network_from_statistic,
+  score_thr = r6$network_score_thr,
+  isolate_nodes = FALSE,
+  layout = "force",
+  show_names = TRUE,
+  selected = NULL,
+  filtered = FALSE
+)
+```
+
+`r if(!Network_param) ":::"`
+
+`r if(!ORA_param) "::: {.content-hidden}"`
+
+## Gene Ontology Overrepresentation Analysis (GO ORA)
+
+The following graphs display the results of the Gene Ontology Overrepresentation Analysis (GO ORA) performed on the proteomic data. GO ORA is a powerful tool used to identify biological processes, molecular functions, and cellular components that are significantly enriched in a given set of proteins compared to the background proteome.
+
+In these visualizations, the enriched GO terms are ranked based on their significance, providing insights into the biological roles of the proteins identified in the experiment. The graphs allow for a clear interpretation of which biological pathways or processes are most relevant to the experimental conditions.
+
+These GO terms help to contextualize the proteomic data within broader biological themes, guiding the interpretation of the experimental results and highlighting key functional areas for further exploration.
+
+```{r}
+#| label: "ora generation"
+#| eval: !expr if(ORA_param) TRUE else FALSE
+
+plots <- map(
+  .x = r6$go_ora_focus,
+  .f = ~ r6$plot_ora_single(
+    focus = .x,
+    arrange = r6$go_ora_plot_arrenge,
+    show_category = r6$go_ora_top_n
+  )
+) %>%
+  set_names(r6$go_ora_focus)
+```
+
+```{r}
+#| label: "ora plots"
+#| eval: !expr if(ORA_param) TRUE else FALSE
+#| echo: false
+#| output: asis
+
+cat("::: panel-tabset \n")
+for (p_name in names(plots)) {
+  cat("  \n###", p_name, "  \n")
+  print(htmltools::tagList(plots[[p_name]]))
+  cat("  \n")
+}
+cat("::: \n")
+```
+
+`r if(!ORA_param) ":::"`
+
+`r if(!GSEA_param) "::: {.content-hidden}"`
+
+## Gene Set Enrichment Analysis (GSEA)
+
+The following graphs illustrate the results of Gene Set Enrichment Analysis (GSEA) conducted on the proteomic data. GSEA is a robust computational method used to determine whether predefined sets of genes (or proteins, in this case) show statistically significant, coordinated differences in expression between experimental conditions. Unlike traditional methods that focus on individual proteins, GSEA evaluates changes in entire pathways or biological processes, providing a broader perspective on the data.
+
+In these visualizations, the enriched gene sets are ranked according to their enrichment scores, which reflect the degree to which a particular set of proteins is overrepresented at the top or bottom of the ranked list.
+
+- Positive enrichment scores indicate gene sets that are more active or upregulated in the experimental condition compared to the control.
+- Negative enrichment scores highlight gene sets that are downregulated.
+The GSEA results provide valuable insights into the biological pathways and processes most impacted by the experimental conditions, helping to identify potential mechanisms of action and prioritize areas for further research.
+
+```{r}
+#| label: "gsea generation"
+#| eval: !expr if(GSEA_param) TRUE else FALSE
+
+plots <- map(
+  .x = r6$go_gsea_focus,
+  .f = ~ r6$plot_gsea_single(
+    focus = .x,
+    arrange = r6$go_gsea_plot_arrenge,
+    show_category = r6$go_gsea_top_n
+  )
+) %>%
+  set_names(r6$go_gsea_focus)
+```
+
+```{r}
+#| label: "gsea plots"
+#| eval: !expr if(GSEA_param) TRUE else FALSE
+#| echo: false
+#| output: asis
+
+cat("::: panel-tabset \n")
+for (p_name in names(plots)) {
+  cat("  \n###", p_name, "  \n")
+  print(htmltools::tagList(plots[[p_name]]))
+  cat("  \n")
+}
+cat("::: \n")
+```
+
+`r if(!GSEA_param) ":::"`

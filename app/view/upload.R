@@ -1,6 +1,6 @@
 box::use(
   shiny[moduleServer, NS, selectInput, br, actionButton, fileInput, radioButtons, observeEvent, observe, div, icon, req, uiOutput, renderUI, updateSelectInput, removeUI],
-  bslib[page_fillable, layout_columns, layout_sidebar, tooltip, navset_card_underline, nav_panel, sidebar, accordion, accordion_panel, nav_select, input_switch, toggle_sidebar, input_task_button],
+  bslib[page_fillable, layout_columns, layout_sidebar, tooltip, navset_card_underline, nav_panel, sidebar, accordion, accordion_panel, nav_select, input_switch, toggle_sidebar, nav_remove, input_task_button],
   reactable[reactableOutput, renderReactable, reactable, colDef],
   rhandsontable[rHandsontableOutput, renderRHandsontable, hot_to_r],
   purrr[map, set_names, imap, keep_at, flatten_chr, discard_at],
@@ -71,6 +71,16 @@ server <- function(id, r6, main_session) {
     
     ns <- session$ns
     init("plot", "genes")
+    
+    observe({
+      watch("session")
+      if(!r6$new_session){
+        nav_remove("upload_container", "Table Check")
+        nav_remove("upload_container", "Experimental Design")
+        nav_remove("upload_container", "Experimental Design Check")
+        output$raw_input_table <- renderReactable({r6$table_raw_data()})
+      }
+    })
     
     observe({
       watch("expdesig")

@@ -40,6 +40,7 @@ QProMS <- R6Class(
     # Input parameters #
     raw_data = NULL,
     raw_data_unique = NULL,
+    new_session = TRUE,
     identify_table_status = NULL,
     data = NULL,
     input_type = NULL,
@@ -1763,7 +1764,7 @@ QProMS <- R6Class(
         self$clusters_number <- 1
       }
       
-      if (nrow(mat_base) < self$clusters_number) {
+      if (nrow(mat_base) <= self$clusters_number) {
         self$anova_matrix <- NULL
         self$anova_table <- stat_data
         return()
