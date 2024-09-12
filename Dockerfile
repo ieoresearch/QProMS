@@ -1,0 +1,39 @@
+FROM rocker/shiny:4.3.0
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update -qq \
+  && apt-get install --yes \
+    curl \
+    libgdal-dev \
+    libproj-dev \
+    libudunits2-dev \
+  && rm -rf /var/lib/apt/lists/*
+
+# Remove examples
+WORKDIR /srv/shiny-server
+RUN rm -rf *
+
+# Install R dependencies
+COPY --chown=shiny:shiny .Rprofile renv.lock ./
+COPY --chown=shiny:shiny renv/activate.R renv/
+# Update and install required system packages
+RUN apt-get update && \
+    apt-get install -y \
+    libglpk40 \
+    libglpk-dev \
+    libmagick++-6.q16-8 \
+    libmagick++-dev \
+    imagemagick
+    
+RUN sudo -u shiny Rscript -e 'renv::restore(clean = TRUE)'
+
+# Copy app
+COPY --chown=shiny:shiny app.R ./
+COPY --chown=shiny:shiny config.yml ./
+COPY --chown=shiny:shiny rhino.yml ./
+COPY --chown=shiny:shiny app app/
+
+#COPY --chown=shiny:shiny docker/shiny-server.conf /etc/shiny-server/
+USER shiny
