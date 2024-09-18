@@ -1,5 +1,5 @@
 box::use(
-  shiny[moduleServer, observe, downloadButton, updateSelectInput, downloadHandler, NS, conditionalPanel, radioButtons, selectInput, actionButton, hr, h3, h4, br, div, observeEvent, req, sliderInput, checkboxGroupInput, isolate],
+  shiny[moduleServer, observe, downloadButton, updateSelectInput, downloadHandler, NS, conditionalPanel, withProgress, incProgress, radioButtons, selectInput, actionButton, hr, h3, h4, br, div, observeEvent, req, sliderInput, checkboxGroupInput, isolate],
   bslib[page_fillable, layout_columns, card, card_header, card_body, accordion, accordion_panel, nav_select, tooltip],
   gargoyle[init, watch, trigger],
   quarto[quarto_render],
@@ -140,27 +140,31 @@ server <- function(id, r6) {
       },
       content = function(file) {
         if(!is.null(r6$data)) {
-          params <- c("Preprocessing", "PCA", "Correlation", "Rank",
-                      "Volcano", "Heatmap", "Network", "ORA", "GSEA")
-          shinyalert(
-            title = "The report is rendering",
-            text = "Wait the download window to pops, the report is rendering in background.",
-            size = "m",
-            closeOnClickOutside = TRUE,
-            type = "info",
-            showConfirmButton = FALSE,
-            timer = 0
+          withProgress(
+            message = "The report is rendering",
+            value = 0, {
+              incProgress(1/5, message = "Loading Parameters")
+              Sys.sleep(1)
+              params <- c("Preprocessing", "PCA", "Correlation", "Rank",
+                          "Volcano", "Heatmap", "Network", "ORA", "GSEA")
+              incProgress(1/5, message = "Save session")
+              Sys.sleep(1)
+              r6$download_parameters(handler_file = "app/logic/QProMS_session_internal.rds", r6class = r6)
+              incProgress(1/5, message = "Use only selected Section")
+              Sys.sleep(1)
+              param_list <- map(params, ~ .x %in% isolate(input$report_section)) %>%
+                set_names(params)
+              incProgress(1/5, message = "Render Report", detail = "This operation can take some time..")
+              quarto_render(
+                "app/logic/Report_QProMS.qmd",
+                execute_params = param_list,
+                quiet = FALSE
+              )
+              incProgress(1/5, message = "Finish!")
+              file.copy("app/logic/Report_QProMS.html", file)
+              file.remove("app/logic/Report_QProMS.html")
+            }
           )
-          r6$download_parameters(handler_file = "app/logic/QProMS_session_internal.rds", r6class = r6)
-          param_list <- map(params, ~ .x %in% isolate(input$report_section)) %>%
-            set_names(params)
-          quarto_render(
-            "app/logic/Report_QProMS.qmd",
-            execute_params = param_list,
-            quiet = FALSE
-          )
-          file.copy("app/logic/Report_QProMS.html", file)
-          file.remove("app/logic/Report_QProMS.html")
         }
       }
     )
