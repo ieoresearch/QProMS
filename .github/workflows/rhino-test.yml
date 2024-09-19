@@ -16,6 +16,7 @@ jobs:
             # List each package on a separate line.
           )
           sudo apt-get update
+          sudo apt-get install -y libglpk40 libglpk-dev  # Installa GLPK
           sudo apt-get install --yes "${packages[@]}"
 
       - name: Setup R
