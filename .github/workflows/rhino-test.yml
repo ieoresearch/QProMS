@@ -13,18 +13,15 @@ jobs:
       - name: Install ImageMagick
         run: |
           sudo apt-get update
-          sudo apt-get install -y libmagick++-dev imagemagick  libmagick++-6.q16-8 # Install ImageMagick libraries 
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get install -y libglpk40 libglpk-dev  # needed for `igraph`
+          sudo apt-get install -y libmagick++-dev imagemagick  libmagick++-6.q16-8 # Install ImageMagick libraries `
+     
       - name: Setup system dependencies
         run: |
           packages=(
             # List each package on a separate line.
           )
           sudo apt-get update
-          sudo apt-get install -y libglpk40 libglpk-dev  # Installa GLPK
+          sudo apt-get install -y libglpk40 libglpk-dev  # Install GLPK
           sudo apt-get install --yes "${packages[@]}"
 
       - name: Setup R
