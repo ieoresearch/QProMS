@@ -9,7 +9,15 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        
+      - name: Install ImageMagick
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libmagick++-dev imagemagick  libmagick++-6.q16-8 # Install ImageMagick libraries 
 
+      - name: Install system dependencies
+        run: |
+          sudo apt-get install -y libglpk40 libglpk-dev  # needed for `igraph`
       - name: Setup system dependencies
         run: |
           packages=(
