@@ -48,7 +48,8 @@ suppressPackageStartupMessages(library(reactable))
 
 box::use(app/logic/R6Class_QProMS)
 r6 <- R6Class_QProMS$QProMS$new()
-r6$loading_parameters(input_path = here("app/logic/QProMS_session_internal.rds"), self = r6)
+#r6$loading_parameters(input_path = here("app/logic/QProMS_session_internal.rds"), self = r6)
+r6$loading_parameters(input_path = "/srv/shiny-server/app/logic/QProMS_session_internal.rds", self = r6)
 ```
 
 ```{r}
