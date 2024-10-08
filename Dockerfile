@@ -71,6 +71,6 @@ RUN chmod -R 755 /srv/shiny-server/app
 # COPY --chown=shiny:shiny docker/shiny-server.conf /etc/shiny-server/
 
 # Start the Shiny server
-CMD ["/usr/bin/shiny-server"]
+#CMD ["/usr/bin/shiny-server"]
 
 USER shiny
