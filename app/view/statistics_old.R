@@ -26,7 +26,7 @@ ui <- function(id) {
               "Profile Plot",
               icon("info-circle")
             ),
-            "Select features from the adjacent table section to see their profile plot and their position in the volcano plot."
+            "Select genes from the adjacent table section to see their profile plot and their position in the volcano plot."
           ),
           trelliscopeOutput(ns("profile_plot_uni"), style = "height: 100%")
         ),
@@ -80,7 +80,7 @@ ui <- function(id) {
                 "Fold change",
                 icon("info-circle")
               ),
-              "Fold change cutoff."
+              "Fold change Cutoff."
             ),
             value = 1,
             min = 0,
@@ -93,7 +93,7 @@ ui <- function(id) {
                 "Alpha",
                 icon("info-circle")
               ),
-              "p-value adjustment cutoff."
+              "pvalue adjustment Cutoff."
             ),
             value = 0.05,
             min = 0.01,
@@ -202,13 +202,13 @@ server <- function(id, r6, main_session) {
         test_type = r6$univariate_test_type
       )
       trigger("stat")
-      feature_selected <- reactive(getReactableState("table_uni", "selected"))
+      gene_selected <- reactive(getReactableState("table_uni", "selected"))
       if(isolate(input$plot_type) == "Volcano") {
         output$volcano_plot <- renderTrelliscope({
           if(!is.null(r6$stat_table)) {
             table <- r6$print_stat_table()
-            highlights <- table[feature_selected(),] %>% 
-              pull(feature_names)
+            highlights <- table[gene_selected(),] %>% 
+              pull(gene_names)
             r6$plot_volcano(
               r6$contrasts,
               highlights,
@@ -221,8 +221,8 @@ server <- function(id, r6, main_session) {
         output$volcano_plot <- renderTrelliscope({
           if(!is.null(r6$stat_table)) {
             table <- r6$print_stat_table()
-            highlights <- table[feature_selected(),] %>% 
-              pull(feature_names)
+            highlights <- table[gene_selected(),] %>% 
+              pull(gene_names)
             r6$plot_ma(
               r6$contrasts,
               highlights,
@@ -235,8 +235,8 @@ server <- function(id, r6, main_session) {
       output$profile_plot_uni <- renderTrelliscope({
         if(!is.null(r6$stat_table)) {
           table <- r6$print_stat_table()
-          highlights <- table[feature_selected(),] %>% 
-            pull(feature_names)
+          highlights <- table[gene_selected(),] %>% 
+            pull(gene_names)
           r6$plot_stat_profile(tests = r6$contrasts, genes = highlights)
         }
       })

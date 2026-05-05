@@ -19,17 +19,18 @@ metadata_list <- list(
     "Reverse",
     "Potential contaminant"
   ),
-  "DIA-NN" = c("Genes", "Protein.Ids"),
+  "DIA-NN" = c("Run", "Protein", "Sequence", "Precursor.Id", "Fragment.Sum"),
   "Spectronaut" = c("PG.Genes", "PG.ProteinGroups"),
   "ProteomeDiscoverer" = c("Accession", "# Peptides", "# Unique Peptides", "# Razor Peptides"),
   "AlphaPept" = "V1"
+  
 )
 
 #' @export
 intensity_list <- list(
   "FragPipe" = c("MaxLFQ Intensity", "Intensity"),
   "MaxQuant" = c("LFQ intensity ", "iBAQ ", "Intensity "),
-  "DIA-NN" = c(".mzML", ".raw"),
+  "DIA-NN" = c(".mzML", ".raw","Fragment.Sum"),
   "Spectronaut" = c("PG.Quantity", "PG.MS1Quantity", "PG.MS2Quantity"),
   "ProteomeDiscoverer" = c("Abundance:", "Abundances \\(Normalized\\):"),
   "AlphaPept" = "_LFQ"
@@ -61,7 +62,7 @@ org_map <- list(
     wiki = "Drosophila melanogaster",
     tax_id = 7227
   ),
-  buddingyast = list(
+  buddingyeast = list(
     orgdb = org.Sc.sgd.db,
     kegg = "sce",
     wiki = "Saccharomyces cerevisiae",
