@@ -132,7 +132,7 @@ QProMS <- R6Class(
     # parameters for imputation #
     imp_methods_used = NULL, 
     imputed_data = NULL,
-    imp_methods = "mixed",
+    imp_methods = "missforest",
     mar_mnar_thresh = 0.75,
     imp_shift = 1.8,
     imp_scale = 0.3,
@@ -3886,7 +3886,7 @@ QProMS <- R6Class(
     download_table = function(handler_file, table_type, table_extension, extra_columns) {
       table <- switch(
         table_type,
-        "Filtred" = self$print_table(self$filtered_data, df = TRUE),
+        "Filtered" = self$print_table(self$filtered_data, df = TRUE),
         "Normalized" = self$print_table(self$normalized_data, df = TRUE),
         "Imputed" = self$print_table(self$imputed_data, df = TRUE),
         "Ranked" = self$print_rank_table(),

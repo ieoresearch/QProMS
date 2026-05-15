@@ -293,7 +293,7 @@ ui <- function(id) {
             inputId = ns("imputation_input"),
             label = "Method",
             choices = c("Mixed" = "mixed", "Perseus" = "perseus", "missForest" = "missforest", "None" = "none"),
-            selected = "mixed"
+            selected = "missforest"
           ),
           conditionalPanel(
             condition = "input.imputation_input == 'mixed' || input.imputation_input == 'perseus'",

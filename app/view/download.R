@@ -1,5 +1,5 @@
 box::use(
-  shiny[moduleServer, observe, downloadButton, fluidPage, p, updateCheckboxGroupInput, span, uiOutput,  checkboxInput, updateSelectInput, downloadHandler, NS, conditionalPanel, withProgress, incProgress, radioButtons, selectInput, actionButton, hr, h3, h4, br, div, observeEvent, req, sliderInput, checkboxGroupInput, isolate],
+  shiny[moduleServer, observe, downloadButton, fluidPage, p, updateCheckboxGroupInput, span, uiOutput, checkboxInput, updateSelectInput, downloadHandler, NS, conditionalPanel, withProgress, incProgress, radioButtons, selectInput, actionButton, hr, h3, h4, br, div, observeEvent, req, sliderInput, checkboxGroupInput, isolate],
   bslib[page_fillable, layout_columns, card, card_header, card_body, accordion, accordion_panel, nav_select, tooltip],
   gargoyle[init, watch, trigger],
   quarto[quarto_render],
@@ -29,34 +29,22 @@ ui <- function(id) {
         )
       ),
       card(
+        style = "overflow: visible;",
         card_header(
           h4("📊 Export result tables")
         ),
         card_body(
+          style = "overflow: visible;",
           layout_columns(
             col_widths = c(6, 3, 3),
             selectInput(
               ns("select_table"),
               "Table",
               choices = list(
-                "Preprocessing" = c(
-                  "Filtered",
-                  "Normalized",
-                  "Imputed"
-                ),
-                "Statistical analysis" = c(
-                  "Ranked",
-                  "Volcano"
-                ),
-                "Visualization data" = c(
-                  "Heatmap",
-                  "Nodes",
-                  "Edges"
-                ),
-                "Functional enrichment" = c(
-                  "ORA",
-                  "GSEA"
-                )
+                "Preprocessing" = c("Filtered", "Normalized", "Imputed"),
+                "Statistical analysis" = c("Ranked", "Volcano"),
+                "Visualization data" = c("Heatmap", "Nodes", "Edges"),
+                "Functional enrichment" = c("ORA", "GSEA")
               ),
               width = "100%"
             ),
@@ -106,10 +94,7 @@ ui <- function(id) {
             radioButtons(
               ns("report_preset"),
               "Report preset",
-              choices = c(
-                "Full report" = "full",
-                "Custom" = "custom"
-              ),
+              choices = c("Full report" = "full", "Custom" = "custom"),
               selected = "full"
             ),
             conditionalPanel(
@@ -173,6 +158,22 @@ ui <- function(id) {
 server <- function(id, r6) {
   moduleServer(id, function(input, output, session) {
     
+    get_table_from_r6 <- function(table_type) {
+      switch(table_type,
+             "Filtered"   = r6$filtered_data,    
+             "Normalized" = r6$normalized_data,
+             "Imputed"    = r6$imputed_data,
+             "Ranked"     = r6$rank_data,
+             "Volcano"    = r6$stat_table,
+             "Heatmap"    = r6$anova_table,
+             "Nodes"      = r6$nodes_table,
+             "Edges"      = r6$edges_table,
+             "ORA"        = r6$ora_table,        
+             "GSEA"       = r6$gsea_table,
+             NULL
+      )
+    }
+    
     observe({
       watch("genes")
       updateSelectInput(
@@ -190,26 +191,12 @@ server <- function(id, r6) {
         updateCheckboxGroupInput(
           inputId = "report_section",
           choices = c(
-            "Preprocessing",
-            "PCA",
-            "Correlation",
-            "Rank",
-            "Volcano",
-            "Heatmap",
-            "Network",
-            "ORA",
-            "GSEA"
+            "Preprocessing", "PCA", "Correlation", "Rank",
+            "Volcano", "Heatmap", "Network", "ORA", "GSEA"
           ),
           selected = c(
-            "Preprocessing",
-            "PCA",
-            "Correlation",
-            "Rank",
-            "Volcano",
-            "Heatmap",
-            "Network",
-            "ORA",
-            "GSEA"
+            "Preprocessing", "PCA", "Correlation", "Rank",
+            "Volcano", "Heatmap", "Network", "ORA", "GSEA"
           )
         )
       }
@@ -220,14 +207,38 @@ server <- function(id, r6) {
         paste0(input$select_table, "_table_", Sys.Date(), input$table_extension)
       },
       content = function(file) {
-       if(!is.null(r6$data)) {
-         r6$download_table(
-           handler_file = file,
-           table_type = input$select_table,
-           table_extension = input$table_extension,
-           extra_columns = input$add_metadata
-         )
-       }
+        
+        if (is.null(r6$data)) {
+          shinyalert(
+            title = "No data loaded",
+            text  = "Please load your data before downloading a table.",
+            type  = "warning"
+          )
+          return(invisible(NULL))
+        }
+        
+        selected_table <- input$select_table
+        table_data     <- get_table_from_r6(selected_table)
+        
+        if (is.null(table_data)) {
+          shinyalert(
+            title = "Table not available",
+            text  = paste0(
+              "The '", selected_table, "' table has not been generated yet. ",
+              "Please complete the corresponding analysis step first."
+            ),
+            type  = "warning"
+          )
+          return(invisible(NULL))
+        }
+        
+        # --- Tutto ok: procedi con il download ---
+        r6$download_table(
+          handler_file    = file,
+          table_type      = selected_table,
+          table_extension = input$table_extension,
+          extra_columns   = input$add_metadata
+        )
       }
     )
     
@@ -236,39 +247,35 @@ server <- function(id, r6) {
         paste0("QProMS_report_", Sys.Date(), ".html")
       },
       content = function(file) {
-        if(!is.null(r6$data)) {
-          withProgress(
-            message = "The report is rendering",
-            value = 0, {
-              incProgress(1/5, message = "Loading Parameters")
-              Sys.sleep(1)
-              params <- c("Preprocessing", "PCA", "Correlation", "Rank",
-                          "Volcano", "Heatmap", "Network", "ORA", "GSEA")
-              incProgress(1/5, message = "Save session")
-              Sys.sleep(1)
-              r6$download_parameters(handler_file = "app/logic/QProMS_session_internal.rds", r6class = r6)
-              incProgress(1/5, message = "Use only selected Section")
-              Sys.sleep(1)
-              if(isolate(input$report_preset) == "custom") {
-                param_list <- map(params, ~ .x %in% isolate(input$report_section)) %>%
-                  set_names(params)
-                print(param_list)
-              } else {
-                param_list <- map(params, ~ .x %in% params) %>%
-                  set_names(params)
-                print(param_list)
-              }
-              incProgress(1/5, message = "Render Report", detail = "This operation can take some time..")
-              quarto_render(
-                "app/logic/Report_QProMS.qmd",
-                execute_params = param_list,
-                quiet = FALSE
-              )
-              incProgress(1/5, message = "Finish!")
-              file.copy("app/logic/Report_QProMS.html", file)
-              file.remove("app/logic/Report_QProMS.html")
+        if (!is.null(r6$data)) {
+          withProgress(message = "The report is rendering", value = 0, {
+            incProgress(1/5, message = "Loading Parameters")
+            Sys.sleep(1)
+            params <- c("Preprocessing", "PCA", "Correlation", "Rank",
+                        "Volcano", "Heatmap", "Network", "ORA", "GSEA")
+            incProgress(1/5, message = "Save session")
+            Sys.sleep(1)
+            r6$download_parameters(handler_file = "app/logic/QProMS_session_internal.rds", r6class = r6)
+            incProgress(1/5, message = "Use only selected Section")
+            Sys.sleep(1)
+            if (isolate(input$report_preset) == "custom") {
+              param_list <- map(params, ~ .x %in% isolate(input$report_section)) %>%
+                set_names(params)
+            } else {
+              param_list <- map(params, ~ .x %in% params) %>%
+                set_names(params)
             }
-          )
+            print(param_list)
+            incProgress(1/5, message = "Render Report", detail = "This operation can take some time..")
+            quarto_render(
+              "app/logic/Report_QProMS.qmd",
+              execute_params = param_list,
+              quiet = FALSE
+            )
+            incProgress(1/5, message = "Finish!")
+            file.copy("app/logic/Report_QProMS.html", file)
+            file.remove("app/logic/Report_QProMS.html")
+          })
         }
       }
     )
@@ -278,7 +285,7 @@ server <- function(id, r6) {
         paste0("QProMS_analysis_", Sys.Date(), ".rds")
       },
       content = function(file) {
-        if(!is.null(r6$data)) {
+        if (!is.null(r6$data)) {
           r6$new_session <- FALSE
           r6$download_parameters(handler_file = file, r6class = r6)
         }
