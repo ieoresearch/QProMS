@@ -17,10 +17,10 @@ ui <- function(id) {
         nav_panel(
           tooltip(
             trigger = list(
-              "Feature Rank Plot",
+              "Protein Rank Plot",
               icon("info-circle")
             ),
-            "Choose features from the adjacent table section to see their position in the plot."
+            "Choose proteins from the adjacent table section to see their position in the plot."
           ),
           echarts4rOutput(ns("protein_rank_plot"))
         ),
@@ -49,27 +49,27 @@ ui <- function(id) {
                 "Merge Replicate",
                 icon("info-circle")
               ),
-              "If TRUE, use the intensity mean of each feature per condition."
+              "If TRUE, use the intensity mean of each protein per condition."
             ),
             value = FALSE
           ),
           selectInput(
             inputId = ns("target"),
-            label = "Features from",
+            label = "Genes from",
             choices = NULL,
             selected = NULL, 
             width = "auto"
           ),
           selectInput(
             inputId = ns("selections"),
-            label = "Highlights from",
+            label = "Highlights form",
             choices = c("Top Rank" = "top", "Bottom Rank" = "bot"),
             selected = "top", 
             width = "auto"
           ),
           sliderInput(
             inputId = ns("top_n_slider"),
-            label = "n % of features",
+            label = "n % of proteins",
             min = 1,
             max = 50,
             value = 10,
@@ -119,11 +119,11 @@ server <- function(id, r6) {
         output$table <- renderReactable({
           r6$reactable_interactive(r6$print_rank_table())
         })
-        feature_selected <- reactive(getReactableState("table", "selected"))
+        gene_selected <- reactive(getReactableState("table", "selected"))
         output$protein_rank_plot <- renderEcharts4r({
           if(!is.null(r6$rank_data)) {
-            highlights <- r6$rank_data[feature_selected(),] %>%
-              pull(feature_names)
+            highlights <- r6$rank_data[gene_selected(),] %>%
+              pull(gene_names)
             r6$plot_protein_rank(highlights_names = highlights)
           }
         })

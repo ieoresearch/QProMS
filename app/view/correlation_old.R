@@ -26,7 +26,7 @@ ui <- function(id) {
               "Scatter Plots",
               icon("info-circle")
             ),
-            "Choose features from the adjacent table section to see their position in the plots."
+            "Choose proteins from the adjacent table section to see their position in the plots."
           ),
           value = "scatter",
           trelliscopeOutput(ns("scatter_plot"), style = "height: 100%")
@@ -109,7 +109,7 @@ server <- function(id, r6) {
         r6$plot_correlation() 
       })
       
-      feature_selected <- reactive(getReactableState("table", "selected"))
+      gene_selected <- reactive(getReactableState("table", "selected"))
       
       output$table <- renderReactable({
         if(!is.null(r6$imputed_data)) {
@@ -127,13 +127,13 @@ server <- function(id, r6) {
         highlights <- NULL
         if(r6$imp_methods == "none"){
           data <- r6$print_table(r6$normalized_data, df = TRUE)
-          if(!is.null(feature_selected())){
-            highlights <- data[feature_selected(), ] %>% pull(feature_names)
+          if(!is.null(gene_selected())){
+            highlights <- data[gene_selected(), ] %>% pull(gene_names)
           }
         }else{
           data <- r6$print_table(r6$imputed_data, df = TRUE)
-          if(!is.null(feature_selected())){
-            highlights <- data[feature_selected(), ] %>% pull(feature_names)
+          if(!is.null(gene_selected())){
+            highlights <- data[gene_selected(), ] %>% pull(gene_names)
           }
         }
         x <- isolate(input$x_filter)

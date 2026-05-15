@@ -29,6 +29,7 @@ panels <- list(
   )
 )
 
+
 #' @export
 ui <- function(id) {
   ns <- NS(id)
@@ -108,14 +109,16 @@ server <- function(id, r6, main_session) {
         })
         
         nav_select("upload_container", "Table Check")
+        ## render message based of the table identification
         msg <- r6$identify_table_type()
         output$alert_message <- renderUI({
-          imap(msg[[2]], .f = ~ div(
-            class = paste0("alert alert-", msg$status),
-            style = "white-space: pre-wrap;",
-            role = "alert",
-            .x
-          ))
+          imap(msg[[2]],
+               .f = ~ div(
+                 class = paste0("alert alert-", msg$status),
+                 style = "white-space: pre-wrap;",
+                 role = "alert",
+                 .x
+               ))
         })
         if (msg$status == "success") {
           output$raw_summary_table <- renderReactable({
@@ -200,20 +203,27 @@ server <- function(id, r6, main_session) {
         server = TRUE
       )
     })
-
     observeEvent(input$intensity_pattern, {
       req(r6$raw_data)
+      
       all_numeric <- colnames(r6$raw_data)[sapply(r6$raw_data, is.numeric)]
-      filtered <- if (nzchar(input$intensity_pattern)) {
-        grep(input$intensity_pattern, all_numeric, value = TRUE, ignore.case = TRUE)
+      
+      if (nzchar(input$intensity_pattern)) {
+        filtered <- grep(
+          input$intensity_pattern,
+          all_numeric,
+          value = TRUE,
+          ignore.case = TRUE
+        )
       } else {
-        all_numeric
+        filtered <- all_numeric
       }
+      
       updateSelectizeInput(
         session,
         "intensity_columns",
         choices = filtered,
-        selected = filtered,
+        selected = intersect(input$intensity_columns, filtered),
         server = TRUE
       )
     })
@@ -231,7 +241,6 @@ server <- function(id, r6, main_session) {
         })
       }
     })
-
     observeEvent(input$verify, {
       if(!is.null(r6$raw_data) & r6$new_session) {
         des <- hot_to_r(input$exp_design) %>% 
@@ -275,6 +284,7 @@ server <- function(id, r6, main_session) {
               class = "bg-primary"
             )
           }
+          
         })
       }
     })

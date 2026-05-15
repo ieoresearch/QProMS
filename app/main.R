@@ -1,39 +1,41 @@
+# =============================================
+# QProMS - Main Application
+# =============================================
+
 box::use(
-  shiny[div, moduleServer, NS, strong, icon, tags],
-  bslib[page_navbar, page_sidebar, nav_panel, nav_item, sidebar, nav_spacer, page_fluid, bs_theme],
+  shiny[moduleServer, NS, tags, icon],
+  bslib[page_navbar, nav_panel, nav_item, nav_spacer, bs_theme]
 )
 
 box::use(
-  app/view/home,
-  app/view/preprocessing,
-  app/view/pca,
-  app/view/correlation,
-  app/view/upload,
-  app/view/rank,
-  app/view/statistics,
-  app/view/heatmap,
-  app/view/network,
-  app/view/ora,
-  app/view/gsea,
-  app/view/settings,
-  app/view/download,
-  app/view/help,
+  home          = app/view/home,
+  upload        = app/view/upload,
+  preprocessing = app/view/preprocessing,
+  pca           = app/view/pca,
+  correlation   = app/view/correlation,
+  rank          = app/view/rank,
+  stats_mod     = app/view/statistics,
+  heat_mod      = app/view/heatmap,
+  network       = app/view/network,
+  ora           = app/view/ora,
+  gsea          = app/view/gsea,
+  settings      = app/view/settings,
+  download      = app/view/download,
+  help          = app/view/help
 )
 
 box::use(
-  app/logic/R6Class_QProMS,
+  QProMS_module = app/logic/R6Class_QProMS
 )
-
-object <- R6Class_QProMS$QProMS$new()
 
 #' @export
-ui <- function(id) {
+app_ui <- function(id) {
   ns <- NS(id)
   page_navbar(
     id = ns("top_navigation"),
     title = tags$a("QProMS", href = "?", style = "text-decoration: none; color: inherit;"),
     sidebar = NULL,
-    bg = object$primary_color,
+    bg = "#6EC1E4",
     gap = "1rem",
     header = list(
       tags$head(
@@ -43,13 +45,15 @@ ui <- function(id) {
         )
       )
     ),
-    theme = bs_theme(version = 5, primary = object$primary_color), 
+    theme = bs_theme(version = 5, primary = "#6EC1E4"), 
     nav_spacer(),
-    nav_panel(title = "Home", home$ui(ns("home"), primary_col = object$primary_color), style = "padding: 0 !important; margin: -1px;"),
+    nav_panel(title = "Home", home$ui(ns("home"), primary_col = "#6EC1E4")),
     nav_panel(title = "Design", upload$ui(ns("upload"))),
     nav_panel(title = "Preprocessing", preprocessing$ui(ns("preprocessing"))),
     nav_panel(title = "PCA", pca$ui(ns("pca"))),
     nav_panel(title = "Correlation", correlation$ui(ns("correlation"))),
+    nav_panel(title = "Statistics", stats_mod$ui(ns("statistics"))),
+    nav_panel(title = "Heatmap", heat_mod$ui(ns("heatmap"))),
     nav_panel(title = "Rank", rank$ui(ns("rank"))),
     nav_panel(title = "Network", network$ui(ns("network"))),
     nav_panel(title = "ORA", ora$ui(ns("ora"))),
@@ -63,11 +67,11 @@ ui <- function(id) {
 }
 
 #' @export
-server <- function(id) {
+app_server <- function(id) {
   moduleServer(id, function(input, output, session) {
-    ## Expand Shiny limits for upload
-    options(shiny.maxRequestSize=10000*1024^2)
-    ## Load modules server
+    object <- QProMS_module$QProMS$new()
+    options(shiny.maxRequestSize = 10000 * 1024^2)
+    
     home$server("home", r6 = object, main_session = session)
     upload$server("upload", r6 = object, main_session = session)
     preprocessing$server("preprocessing", r6 = object)
@@ -77,8 +81,20 @@ server <- function(id) {
     network$server("network", r6 = object, main_session = session)
     ora$server("ora", r6 = object, main_session = session)
     gsea$server("gsea", r6 = object, main_session = session)
+    stats_mod$server("statistics", r6 = object)
+    heat_mod$server("heatmap", r6 = object)
     download$server("download", r6 = object)
     settings$server("settings", r6 = object, main_session = session)
     help$server("help", r6 = object, main_session = session)
   })
+}
+
+#' @export
+ui <- function(request) {
+  app_ui("app")
+}
+
+#' @export
+server <- function(input, output, session) {
+  app_server("app")
 }
