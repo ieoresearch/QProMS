@@ -121,6 +121,47 @@ ui <- function(id, primary_col) {
   )
 }
 
+validate_uploaded_file <- function(upload, allowed_extensions, label) {
+  extension <- tolower(tools::file_ext(upload$name))
+  allowed_extensions <- tolower(allowed_extensions)
+  max_size_mb <- getOption("qproms.maxUploadSizeMb", 500)
+  max_size_bytes <- max_size_mb * 1024^2
+
+  if (!extension %in% allowed_extensions) {
+    shinyalert(
+      title = "Unsupported file type",
+      text = paste0(
+        "The ", label, " must use one of these extensions: ",
+        paste(paste0(".", allowed_extensions), collapse = ", "), "."
+      ),
+      size = "m",
+      closeOnClickOutside = TRUE,
+      type = "error",
+      showConfirmButton = FALSE,
+      timer = 5000
+    )
+    return(FALSE)
+  }
+
+  if (!is.null(upload$size) && upload$size > max_size_bytes) {
+    shinyalert(
+      title = "File too large",
+      text = paste0(
+        "The ", label, " is larger than the configured ",
+        max_size_mb, " MB upload limit."
+      ),
+      size = "m",
+      closeOnClickOutside = TRUE,
+      type = "error",
+      showConfirmButton = FALSE,
+      timer = 5000
+    )
+    return(FALSE)
+  }
+
+  TRUE
+}
+
 
 #' @export
 server <- function(id, r6, main_session) {
@@ -150,6 +191,9 @@ server <- function(id, r6, main_session) {
           )
         }
         req(input$upload_file)
+        if (!validate_uploaded_file(input$upload_file, c("txt", "tsv", "csv"), "dataset")) {
+          return(invisible(NULL))
+        }
         ## Load the data
         r6$loading_data(input_path = input$upload_file$datapath)
         trigger("expdesig")
@@ -168,8 +212,31 @@ server <- function(id, r6, main_session) {
           )
         }
         req(input$upload_params)
+        if (!validate_uploaded_file(input$upload_params, "rds", "analysis session")) {
+          return(invisible(NULL))
+        }
         if(!is.null(input$upload_params)) {
-          r6$loading_parameters(input_path = input$upload_params$datapath, r6)
+          restore_ok <- tryCatch(
+            {
+              r6$loading_parameters(input_path = input$upload_params$datapath, r6)
+              TRUE
+            },
+            error = function(e) {
+              shinyalert(
+                title = "Invalid session file",
+                text = conditionMessage(e),
+                size = "m",
+                closeOnClickOutside = TRUE,
+                type = "error",
+                showConfirmButton = FALSE,
+                timer = 7000
+              )
+              FALSE
+            }
+          )
+          if (!restore_ok) {
+            return(invisible(NULL))
+          }
           trigger("session", "genes")
           nav_select("top_navigation", "Preprocessing", session = main_session)
           purrr::walk(names(panels), ~ nav_remove("top_navigation", target  = .x, session = main_session))
