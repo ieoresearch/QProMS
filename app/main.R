@@ -24,7 +24,7 @@ box::use(
   app/logic/R6Class_QProMS,
 )
 
-object <- R6Class_QProMS$QProMS$new()
+default_primary_color <- "#6EC1E4"
 
 #' @export
 ui <- function(id) {
@@ -33,7 +33,7 @@ ui <- function(id) {
     id = ns("top_navigation"),
     title = tags$a("QProMS", href = "?", style = "text-decoration: none; color: inherit;"),
     sidebar = NULL,
-    bg = object$primary_color,
+    bg = default_primary_color,
     gap = "1rem",
     header = list(
       tags$head(
@@ -43,9 +43,9 @@ ui <- function(id) {
         )
       )
     ),
-    theme = bs_theme(version = 5, primary = object$primary_color), 
+    theme = bs_theme(version = 5, primary = default_primary_color),
     nav_spacer(),
-    nav_panel(title = "Home", home$ui(ns("home"), primary_col = object$primary_color), style = "padding: 0 !important; margin: -1px;"),
+    nav_panel(title = "Home", home$ui(ns("home"), primary_col = default_primary_color), style = "padding: 0 !important; margin: -1px;"),
     nav_panel(title = "Design", upload$ui(ns("upload"))),
     nav_panel(title = "Preprocessing", preprocessing$ui(ns("preprocessing"))),
     nav_panel(title = "PCA", pca$ui(ns("pca"))),
@@ -65,20 +65,21 @@ ui <- function(id) {
 #' @export
 server <- function(id) {
   moduleServer(id, function(input, output, session) {
+    session_state <- R6Class_QProMS$QProMS$new()
     ## Expand Shiny limits for upload
     options(shiny.maxRequestSize=10000*1024^2)
     ## Load modules server
-    home$server("home", r6 = object, main_session = session)
-    upload$server("upload", r6 = object, main_session = session)
-    preprocessing$server("preprocessing", r6 = object)
-    pca$server("pca", r6 = object)
-    correlation$server("correlation", r6 = object)
-    rank$server("rank", r6 = object)
-    network$server("network", r6 = object, main_session = session)
-    ora$server("ora", r6 = object, main_session = session)
-    gsea$server("gsea", r6 = object, main_session = session)
-    download$server("download", r6 = object)
-    settings$server("settings", r6 = object, main_session = session)
-    help$server("help", r6 = object, main_session = session)
+    home$server("home", r6 = session_state, main_session = session)
+    upload$server("upload", r6 = session_state, main_session = session)
+    preprocessing$server("preprocessing", r6 = session_state)
+    pca$server("pca", r6 = session_state)
+    correlation$server("correlation", r6 = session_state)
+    rank$server("rank", r6 = session_state)
+    network$server("network", r6 = session_state, main_session = session)
+    ora$server("ora", r6 = session_state, main_session = session)
+    gsea$server("gsea", r6 = session_state, main_session = session)
+    download$server("download", r6 = session_state)
+    settings$server("settings", r6 = session_state, main_session = session)
+    help$server("help", r6 = session_state, main_session = session)
   })
 }
