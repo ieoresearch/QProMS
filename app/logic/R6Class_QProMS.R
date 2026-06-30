@@ -187,8 +187,73 @@ QProMS <- R6Class(
       self$raw_data <- fread(input = input_path) 
       self$diann_sequences_parser <- FALSE
     },
+    restorable_slots = function() {
+      slot_classes <- sapply(self, function(value) class(value)[1])
+      names(slot_classes)[!slot_classes %in% c("environment", "function")]
+    },
+    validate_parameters_list = function(parameters_list) {
+      if (!is.list(parameters_list)) {
+        stop("Invalid QProMS session file: expected a named list.", call. = FALSE)
+      }
+
+      parameter_names <- names(parameters_list)
+      if (is.null(parameter_names) || any(is.na(parameter_names) | !nzchar(parameter_names))) {
+        stop("Invalid QProMS session file: all entries must be named.", call. = FALSE)
+      }
+
+      unknown_parameters <- setdiff(parameter_names, self$restorable_slots())
+      if (length(unknown_parameters) > 0) {
+        stop(
+          paste0(
+            "Invalid QProMS session file: unknown entries are not allowed (",
+            paste(unknown_parameters, collapse = ", "),
+            ")."
+          ),
+          call. = FALSE
+        )
+      }
+
+      contains_unsafe_object <- function(value) {
+        if (is.function(value) || is.environment(value) || identical(typeof(value), "externalptr")) {
+          return(TRUE)
+        }
+        if (is.list(value)) {
+          return(any(vapply(value, contains_unsafe_object, logical(1))))
+        }
+        FALSE
+      }
+
+      unsafe_parameters <- parameter_names[vapply(parameters_list, contains_unsafe_object, logical(1))]
+      if (length(unsafe_parameters) > 0) {
+        stop(
+          paste0(
+            "Invalid QProMS session file: functions, environments, and external pointers ",
+            "cannot be restored (",
+            paste(unsafe_parameters, collapse = ", "),
+            ")."
+          ),
+          call. = FALSE
+        )
+      }
+
+      max_restore_mb <- getOption("qproms.maxUploadSizeMb", 500)
+      max_restore_bytes <- max_restore_mb * 1024^2
+      if (as.numeric(object.size(parameters_list)) > max_restore_bytes) {
+        stop(
+          paste0(
+            "Invalid QProMS session file: restored session exceeds the configured ",
+            max_restore_mb,
+            " MB size limit."
+          ),
+          call. = FALSE
+        )
+      }
+
+      TRUE
+    },
     loading_parameters = function(input_path, self, print = FALSE) {
-      parameters_list <- list.load(input_path)
+      parameters_list <- list.load(input_path, type = "rds")
+      self$validate_parameters_list(parameters_list)
       imap(parameters_list, ~ {self[[.y]] <- .x})
       invisible(self)
       if(print){return(parameters_list)}

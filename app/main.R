@@ -65,8 +65,16 @@ ui <- function(id) {
 #' @export
 server <- function(id) {
   moduleServer(id, function(input, output, session) {
-    ## Expand Shiny limits for upload
-    options(shiny.maxRequestSize=10000*1024^2)
+    ## Configure upload limits. Keep the limit explicit and overrideable so
+    ## public deployments do not accept multi-GB anonymous uploads by default.
+    max_upload_mb <- suppressWarnings(as.numeric(Sys.getenv("QPROMS_MAX_UPLOAD_MB", "500")))
+    if (is.na(max_upload_mb) || max_upload_mb <= 0) {
+      max_upload_mb <- 500
+    }
+    options(
+      shiny.maxRequestSize = max_upload_mb * 1024^2,
+      qproms.maxUploadSizeMb = max_upload_mb
+    )
     ## Load modules server
     home$server("home", r6 = object, main_session = session)
     upload$server("upload", r6 = object, main_session = session)
