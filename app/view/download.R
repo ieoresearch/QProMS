@@ -150,6 +150,34 @@ server <- function(id, r6) {
     
     report_file <- reactiveVal(NULL)
     
+    cleanup_generated_report <- function(path) {
+      if (is.null(path) || !nzchar(path)) {
+        return(invisible(NULL))
+      }
+
+      report_dir <- dirname(path)
+      temp_root <- normalizePath(tempdir(), mustWork = TRUE)
+      report_dir_norm <- normalizePath(report_dir, mustWork = FALSE)
+      is_temp_child <- startsWith(report_dir_norm, paste0(temp_root, .Platform$file.sep))
+
+      if (is_temp_child && dir.exists(report_dir_norm)) {
+        unlink(report_dir_norm, recursive = TRUE, force = TRUE)
+      } else if (file.exists(path)) {
+        unlink(path, force = TRUE)
+      }
+
+      invisible(NULL)
+    }
+
+    reset_report_file <- function() {
+      cleanup_generated_report(report_file())
+      report_file(NULL)
+    }
+
+    session$onSessionEnded(function() {
+      cleanup_generated_report(report_file())
+    })
+
     output$report_controls <- renderUI({
       generated_report <- report_file()
       report_ready <- !is.null(generated_report) && file.exists(generated_report)
@@ -193,7 +221,7 @@ server <- function(id, r6) {
     observeEvent(
       list(input$report_preset, input$report_section),
       {
-        report_file(NULL)
+        reset_report_file()
       },
       ignoreInit = TRUE
     )
@@ -311,7 +339,7 @@ server <- function(id, r6) {
     )
     
     observeEvent(input$generate_report, {
-      report_file(NULL)
+      reset_report_file()
       
       if (is.null(r6$data)) {
         shinyalert(
@@ -332,7 +360,11 @@ server <- function(id, r6) {
         
         incProgress(1/5, message = "Saving session")
         
-        session_file <- "/srv/shiny-server/app/logic/QProMS_session_internal.rds"
+        app_root <- normalizePath(getwd(), mustWork = TRUE)
+        report_qmd <- file.path(app_root, "app/logic/Report_QProMS.qmd")
+        session_file <- tempfile("QProMS_session_", fileext = ".rds")
+        on.exit(unlink(session_file, force = TRUE), add = TRUE)
+
         r6$download_parameters(
           handler_file = session_file,
           r6class = r6
@@ -348,6 +380,7 @@ server <- function(id, r6) {
             set_names(params)
         }
         
+        param_list <- c(param_list, list(session_file = session_file))
         print(param_list)
         
         incProgress(
@@ -356,39 +389,42 @@ server <- function(id, r6) {
           detail = "This operation can take some time."
         )
         
-        source_report <- "/srv/shiny-server/app/logic/Report_QProMS.html"
+        render_dir <- tempfile("QProMS_report_")
+        dir.create(render_dir)
+        render_committed <- FALSE
+        on.exit({
+          if (!isTRUE(render_committed)) {
+            unlink(render_dir, recursive = TRUE, force = TRUE)
+          }
+        }, add = TRUE)
         
-        if (file.exists(source_report)) {
-          file.remove(source_report)
-        }
+        output_file <- paste0(
+          "QProMS_report_",
+          Sys.getpid(),
+          "_",
+          as.integer(Sys.time()),
+          ".html"
+        )
         
         quarto_render(
-          input = "/srv/shiny-server/app/logic/Report_QProMS.qmd",
+          input = report_qmd,
+          output_file = output_file,
+          output_dir = render_dir,
           execute_params = param_list,
           quiet = FALSE,
-          execute_dir = "/srv/shiny-server"
+          execute_dir = app_root
         )
         
         incProgress(1/5, message = "Finalizing report")
         
-        if (!file.exists(source_report)) {
-          stop("Report HTML was not created: ", source_report)
+        generated_report <- file.path(render_dir, output_file)
+        
+        if (!file.exists(generated_report)) {
+          stop("Report HTML was not created: ", generated_report)
         }
         
-        tmp_report <- file.path(
-          tempdir(),
-          paste0("QProMS_report_", Sys.getpid(), "_", as.integer(Sys.time()), ".html")
-        )
-        
-        ok <- file.copy(source_report, tmp_report, overwrite = TRUE)
-        
-        if (!isTRUE(ok) || !file.exists(tmp_report)) {
-          stop("Failed to copy report to temporary file: ", tmp_report)
-        }
-        
-        file.remove(source_report)
-        
-        report_file(tmp_report)
+        report_file(generated_report)
+        render_committed <- TRUE
         
         showNotification(
           "Report generated successfully. You can now download it.",

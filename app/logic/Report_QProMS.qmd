@@ -30,6 +30,7 @@ params:
   Network: TRUE
   ORA: TRUE
   GSEA: TRUE
+  session_file: null
 ---
 
 This is a report summarizing the results obtained from [QProMS App](https://bioserver.ieo.it/shiny/app/qproms).
@@ -48,10 +49,11 @@ suppressPackageStartupMessages(library(reactable))
 
 box::use(app/logic/R6Class_QProMS)
 r6 <- R6Class_QProMS$QProMS$new()
-# Remove the comment below to download the report locally
-# param_list <- r6$loading_parameters(input_path = here("app/logic/QProMS_session_internal.rds"), self = r6, print = TRUE)
-# This line loads the report from the server path (for production use)
-param_list <- r6$loading_parameters(input_path = "/srv/shiny-server/app/logic/QProMS_session_internal.rds", self = r6, print = TRUE)
+session_file <- params$session_file
+if (is.null(session_file) || !nzchar(session_file) || !file.exists(session_file)) {
+  stop("A valid QProMS session file must be provided via params$session_file.")
+}
+param_list <- r6$loading_parameters(input_path = session_file, self = r6, print = TRUE)
 r6$prepare_report_outputs()
 
 safe_panel_plots <- function(items, plot_fn, message) {
