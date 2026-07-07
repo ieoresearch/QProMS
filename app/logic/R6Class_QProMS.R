@@ -390,12 +390,67 @@ QProMS <- R6Class(
       
       return(table)
     },
+    normalize_expdesign_conditions = function(data) {
+      data$condition <- as.character(data$condition)
+      original_conditions <- data$condition
+      data$condition <- str_replace_all(data$condition, "_", "-")
+
+      changed_conditions <- unique(original_conditions[
+        !is.na(original_conditions) &
+          original_conditions != data$condition
+      ])
+
+      condition_map <- tibble(
+        original = unique(original_conditions[
+          !is.na(original_conditions) &
+            original_conditions != ""
+        ])
+      ) %>%
+        mutate(normalized = str_replace_all(original, "_", "-"))
+
+      collision_names <- condition_map$normalized[
+        duplicated(condition_map$normalized) |
+          duplicated(condition_map$normalized, fromLast = TRUE)
+      ] %>%
+        unique()
+
+      collision_messages <- map_chr(collision_names, function(name) {
+        originals <- condition_map %>%
+          filter(normalized == name) %>%
+          pull(original)
+        paste0(name, " (from ", paste(originals, collapse = ", "), ")")
+      })
+
+      list(
+        data = data,
+        changed = length(changed_conditions) > 0,
+        changed_conditions = changed_conditions,
+        collisions = collision_messages
+      )
+    },
     validate_expdesign = function(data) {
       results <- list()
       validation_status <- TRUE
+      normalized <- self$normalize_expdesign_conditions(data)
+      data <- normalized$data
+
+      if (normalized$changed) {
+        results$condition_name_warning <- paste(
+          "warning Group names cannot contain \"_\"; it has been replaced with \"-\" in:",
+          paste(normalized$changed_conditions, collapse = ", "),
+          "You can proceed by clicking START."
+        )
+      }
       
       if (any(is.na(data$condition)) || any(data$condition == "")) {
         results$condition_check <- "danger The 'condition' column contains missing or empty values."
+        validation_status <- FALSE
+      } else if (length(normalized$collisions) > 0) {
+        results$condition_check <- paste(
+          "danger Replacing \"_\" with \"-\" makes these group names ambiguous:",
+          paste(normalized$collisions, collapse = "; "),
+          "Please choose distinct group names."
+        )
         validation_status <- FALSE
       } else {
         # Controlla che la colonna "condition" contenga almeno 2 gruppi con almeno 3 componenti per gruppo
@@ -433,6 +488,8 @@ QProMS <- R6Class(
       return(results)
     },
     add_replicate_and_label = function(data) {
+      data <- self$normalize_expdesign_conditions(data)$data
+
       # Aggiungi la colonna replicate con numeri crescenti per ogni gruppo di condition
       data <- data %>%
         group_by(condition) %>%
